@@ -182,7 +182,7 @@ output = torch.matmul(tensor_A, tensor_B) # torch.mm is the same as torch.matmul
 """
 FINDING min, max, mean, sum, etc (TENSOR AGGREGATION) 
 """
-x = torch.arange(0, 100, 10, dtype=torch.float32) 
+x = torch.arange(1, 100, 10, dtype=torch.float32) 
 
 
 # Find min 
@@ -193,4 +193,67 @@ torch.max(x)
 mean = torch.mean(x) 
 
 # Find the sum 
-print(torch.sum(x))
+#print(torch.sum(x)) 
+
+
+"""
+Fidning the positional min and max
+"""
+#print(x.argmin())
+#print(x.argmax()) 
+
+
+"""
+RESHAPING, VIEWING, STACKING, SQEEZING, UNSQEEZING, AND PERMUTING TENSORS
+1. Reshaping - reshaping an input tensor to a defined shaped
+2. View - Return a view of an input tensor of a certain shape but keep the same memory
+as the original tensor 
+3. Stacking - Combining multiple vectors on top of each other (vstack, hstack, etc) 
+4. Squeeze - remove all '1' dimensions from a tensor 
+5. Unsqueeze - Adds a one dimension to a target tensor
+6. Permute - Return a view of the input with dimensions permuted (swapped) in a certain way.
+"""
+
+x = torch.arange(1.0, 10.0) 
+#print(x, x.shape)
+
+# Add an extra dimension 
+x_reshaped = x.reshape(1, 9) 
+#print(x_reshaped) 
+
+# Change the view 
+z = x.view(3, 3) 
+#print(z, z.shape) 
+
+"""
+Changing z changes x (because a view of a tensor shares the same memory as the original input) 
+
+""" 
+z[:, 0] = 5 
+
+#print(x) # The first element of x also changes 
+
+# Stack tensors on top of each other 
+x_stacked = torch.stack([x, x, x, x], dim=1)    
+#print(x_stacked)      
+
+# Sqeeze  - removes all single dimensionsssss from a tensor 
+#print(x_reshaped)
+x_squeezed =  torch.squeeze(x_reshaped) 
+
+#print(x_squeezed)   
+print(x_squeezed.shape) 
+
+# Unsqueeze - adds a single dimension to a target tensor at a specific dim (dimension) 
+x_unsqueezed = x_squeezed.unsqueeze(dim=0) 
+#print(x_unsqueezed.shape) 
+
+# permute - rearranges the dimensions of the target tensor in a specified order 
+
+x_original = torch.rand(size=(224, 224, 3)) 
+
+# Permute the original tensor to rearrange the axis(or dim) order 
+
+x_permuted = x_original.permute(2, 0, 1)  # Color channels, height, view
+
+print(x_permuted.shape)
