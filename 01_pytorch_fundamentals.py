@@ -63,9 +63,102 @@ random_image_size_tensor = torch.rand(size=(224, 224, 3)) # Height, width, color
 
 # Random tensor of all zeros 
 zeros = torch.zeros(size=(3, 4))
-print(zeros)
+#print(zeros)
 
 # Random tensor of one 
-ones = torch.ones(size=(2, 4), dtype=torch.int32)
-print(ones)
-print(ones.dtype)
+ones = torch.ones(size=(2, 4))
+#print(ones)
+#print(ones.dtype) 
+
+# Creating a range of tensors and tensors-like 
+one_to_ten = torch.arange(0, 11)  
+#print(one_to_ten)  
+
+# Creating tensors like 
+
+ten_zeros = torch.zeros_like(input=one_to_ten) 
+
+#print(ten_zeros) 
+
+# TENSOR DATATYPES 
+# Float 32 tensor 
+"""
+Tensor datatypes is one of the 3 big errors you'll run into with PyTorch & deep learning
+1. Tensors not right datatype
+2. Tensors not right shape 
+3. Tensors not on right device 
+"""
+float_32_tensor = torch.tensor([3.0, 6, 9.0], 
+                               dtype=torch.float32, # What datatype is the tensor (e.g. float32)
+                               device="cuda", #What device is your tensor on 
+                               requires_grad=False)  #Whether or not to track gradients with this tensor's operations
+float_16_tensor = float_32_tensor.type(torch.float32)
+#print(float_16_tensor.dtype)
+
+result = float_16_tensor * float_32_tensor
+#print(result)
+
+# Getting information from tensors 
+"""
+datatype = tensor.dtype
+shape = tensor.shape 
+evice  = tensor.device
+"""
+some_tensor = torch.rand(3, 4) 
+
+#print(f"Datatype of tensor: {some_tensor.dtype}")
+#print(f"Shape of tensor: {some_tensor.shape}") # or some_tensor.size()
+#print(f"Device of tensor: {some_tensor.device}") 
+
+
+### Manipulating tensors 
+"""
+Tensor operations include: 
+Addition 
+Subtraction 
+Multiplication 
+Division 
+Matrix multiplication (Element-wise)
+""" 
+tensor = torch.tensor([1, 2, 3]) 
+# Add 10
+add = ten_zeros + 10 
+
+# Multiply by 10 
+mul = tensor * 10 
+
+# Subtract 10
+sub = tensor - 10
+
+# Divide by 10 
+div = tensor / 10 
+ 
+# Try out PyTorch built-in functions
+"""
+torch.mul()
+torch.add()
+torch.div()
+torch.sub()
+""" 
+
+# Matrix multiplication(element-wise) 
+mul = tensor * tensor 
+
+
+# Matrix multiplication (dot product)
+matmul = torch.matmul(tensor, tensor) # or tensor @ tensor
+print(matmul) 
+
+"""
+There are two rules tha that perfornming matrix multiplication needs to satisfy
+1. The inner dimensions must match: 
+(3, 2) @ (3, 2) won't work 
+(2, 3) @ (3, 2) will work 
+(3, 2) @ (2, 3) will work 
+
+2. The resulting matrix has the shape of the outer dimensions 
+(2, 3) * (3, 2) -> (2, 2) 
+(3, 2) * (2, 3) -> (3, 3) 
+"""
+print(torch.matmul(torch.rand(3, 10), torch.rand(10, 3))) 
+
