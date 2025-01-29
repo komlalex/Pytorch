@@ -147,7 +147,7 @@ mul = tensor * tensor
 
 # Matrix multiplication (dot product)
 matmul = torch.matmul(tensor, tensor) # or tensor @ tensor
-print(matmul) 
+#print(matmul) 
 
 """
 There are two rules tha that perfornming matrix multiplication needs to satisfy
@@ -160,7 +160,7 @@ There are two rules tha that perfornming matrix multiplication needs to satisfy
 (2, 3) * (3, 2) -> (2, 2) 
 (3, 2) * (2, 3) -> (3, 3) 
 """
-print(torch.matmul(torch.rand(3, 10), torch.rand(10, 3)))  
+#print(torch.matmul(torch.rand(3, 10), torch.rand(10, 3)))  
 
 # SHAPE ERRORS 
 tensor_A = torch.tensor([[1, 2],
@@ -176,5 +176,21 @@ To fix our tensor shape issues, we can manipulate the shape of one of our tensor
 """
 tensor_B = tensor_B.T 
 output = torch.matmul(tensor_A, tensor_B) # torch.mm is the same as torch.matmul
-print(output) 
-print(output.shape)
+#print(output) 
+#print(output.shape) 
+
+"""
+FINDING min, max, mean, sum, etc (TENSOR AGGREGATION) 
+"""
+x = torch.arange(0, 100, 10, dtype=torch.float32) 
+
+
+# Find min 
+x.max()
+torch.max(x)
+
+# Find average 
+mean = torch.mean(x) 
+
+# Find the sum 
+print(torch.sum(x))
