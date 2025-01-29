@@ -160,5 +160,21 @@ There are two rules tha that perfornming matrix multiplication needs to satisfy
 (2, 3) * (3, 2) -> (2, 2) 
 (3, 2) * (2, 3) -> (3, 3) 
 """
-print(torch.matmul(torch.rand(3, 10), torch.rand(10, 3))) 
+print(torch.matmul(torch.rand(3, 10), torch.rand(10, 3)))  
 
+# SHAPE ERRORS 
+tensor_A = torch.tensor([[1, 2],
+                         [3, 3],
+                         [5, 6]]) 
+
+tensor_B = torch.tensor([[7, 10],
+                         [8, 11],
+                         [9, 12]]) 
+
+"""
+To fix our tensor shape issues, we can manipulate the shape of one of our tensors using transpose
+"""
+tensor_B = tensor_B.T 
+output = torch.matmul(tensor_A, tensor_B) # torch.mm is the same as torch.matmul
+print(output) 
+print(output.shape)
