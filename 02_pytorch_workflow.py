@@ -75,4 +75,58 @@ def plot_predictions(train_data=X_train,
     plt.legend(prop={"size": 14}) 
     plt.show()
 
-plot_predictions()
+plot_predictions()  
+
+
+"""BUILD OUR FIRST PYTORCH MODEL
+
+What our model does: 
+1. Start with random values
+2. Look at the training data and adjust the random values to better represent the  ideal values 
+
+This is done through two main algorithms: 
+    1. Gradient descent 
+    2. Backpropagation 
+""" 
+# Create a linear regression model class
+
+class LinearRegressionModel(nn.Module): # Almost everything in PyTorch inherits nn.Module
+    def __init__(self): 
+        super().__init__() 
+        self.weights = nn.Parameter(torch.randn(1, requires_grad=True, dtype=torch.float32)) 
+        self.bias = nn.Parameter(torch.randn(1, requires_grad=True, dtype=torch.float32))
+    
+    # Forward method to define the computation in the model 
+    def forward(self, x: torch.Tensor): 
+        return self.weights * x + self.bias # The linear regression formula 
+
+"""
+PYTORCH MODEL BUILDING ESSENTIALS 
+
+torch.nn - contains all of the building blocks for computational graphs (a neural network can be considered a computational graph)
+torch.nn.Parameter - what parameters should our model try and learn, often a PyTorch layer from torch.nn will set these for us
+torch.nn.Module - The base class for all neural network modules, if you subclass it, you should override foraward() 
+torch.optim - this is where the optimizers in PyTorch live. They will help gradient descent. 
+def forward() - All nn.Module subclasses require you to overwrite forward. 
+
+"""
+
+"""
+# Checking the content of our PyTorch model
+We can check our model parameters or what's inside our model using `.parameters()` 
+
+"""
+
+# Create a random seed 
+torch.manual_seed(42)  
+
+# Create an instance of the model (this is a subclass of nn.Module) 
+model_0 = LinearRegressionModel() 
+
+# Check out the parameters 
+
+#print(list(model_0.parameters())) 
+
+# List named parameters 
+print(model_0.state_dict()) 
+print(weight, bias)
