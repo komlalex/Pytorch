@@ -69,7 +69,7 @@ def plot_predictions(train_data=X_train,
     
     if predictions is not None: 
         # Plot the predictions if they exist
-        plt.scatter(test_data, predictions, c="r", s= 4, labels="Predictions") 
+        plt.scatter(test_data, predictions, c="r", s= 4, label="Predictions") 
     
     # Show the legend 
     plt.legend(prop={"size": 14}) 
@@ -128,5 +128,20 @@ model_0 = LinearRegressionModel()
 #print(list(model_0.parameters())) 
 
 # List named parameters 
-print(model_0.state_dict()) 
-print(weight, bias)
+#print(model_0.state_dict()) 
+#print(weight, bias) 
+
+"""
+Making prediction using `torch.inference_mode()` 
+
+To check our model's predictive power, let's see how well it predicts `Y_test` based on `X_test` 
+
+When we pass data to our model, it's going to run it through the forward() method 
+"""
+
+# Make predictions with model 
+with torch.inference_mode(): 
+     y_preds = model_0(X_test) 
+
+plot_predictions(predictions=y_preds)
+print(y_preds)
