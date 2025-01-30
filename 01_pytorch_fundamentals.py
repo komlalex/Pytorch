@@ -242,7 +242,7 @@ x_stacked = torch.stack([x, x, x, x], dim=1)
 x_squeezed =  torch.squeeze(x_reshaped) 
 
 #print(x_squeezed)   
-print(x_squeezed.shape) 
+#print(x_squeezed.shape) 
 
 # Unsqueeze - adds a single dimension to a target tensor at a specific dim (dimension) 
 x_unsqueezed = x_squeezed.unsqueeze(dim=0) 
@@ -256,4 +256,31 @@ x_original = torch.rand(size=(224, 224, 3))
 
 x_permuted = x_original.permute(2, 0, 1)  # Color channels, height, view
 
-print(x_permuted.shape)
+#print(x_permuted.shape) 
+
+"""
+INDEXING - SELECTING DATA FROM TENSORS
+ 
+"""
+
+x = torch.arange(1, 10).reshape(1, 3, 3)
+#print(x[0]) 
+#print(x[0][0])
+# print(x[0][2][2])  
+
+# You can also use the ":" to select "all" of a target dimension 
+#print(x[:, 0]) 
+
+# Get all values of the 0th and 1st dimensions but only index 1 of the 2nd dimension
+#print(x[:, :, 1]) 
+
+# Get all values of the 0th dimension but only 1 index of the 1st and second dimensions 
+#print(x[:, 1, 1]) 
+ 
+# Get index 0 of 0th and 1st dimension and all values of the 2nd dimension 
+#print(x[0, 0, :]) 
+
+# Index on x to return 9 
+print(x[0][2][2])
+# Index on x to return 3, 6, 9
+print(x[0, :, 2])
