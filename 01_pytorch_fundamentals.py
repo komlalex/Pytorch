@@ -2,12 +2,16 @@
 """
 Created on Wed Jan 29 07:03:03 2025
 
-@author: Alexnader Komla
+@author: Alexander Komla
 """
 import torch
+
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt 
+
+
+
 
 """INTRODUCTION TO TENSORS""" 
 
@@ -349,7 +353,7 @@ GPUs = faster computations on numbers, thanks to CUDA + NVIDIA hardware + PyTorc
 
 1. Easiest - use Google Colab for free GPU 
 2. Use your own GPU     
-3. Use cloud computing - GCP, AWS, Azue, these services allowwww you to rent computers on the cloud and access them
+3. Use cloud computing - GCP, AWS, Azure, these services allowwww you to rent computers on the cloud and access them
 """ 
 
 # Check for GPU access with PyTorch 
