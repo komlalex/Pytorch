@@ -6,7 +6,7 @@ Created on Wed Jan 29 07:03:03 2025
 """
 import torch
 import pandas as pd 
-import numpy 
+import numpy as np
 import matplotlib.pyplot as plt 
 
 """INTRODUCTION TO TENSORS""" 
@@ -281,6 +281,32 @@ x = torch.arange(1, 10).reshape(1, 3, 3)
 #print(x[0, 0, :]) 
 
 # Index on x to return 9 
-print(x[0][2][2])
+#print(x[0][2][2])
+
 # Index on x to return 3, 6, 9
-print(x[0, :, 2])
+#print(x[0, :, 2]) 
+
+"""
+PyTorch Tensors and Numpy 
+
+NumPy is a popular scientific Python computing library.
+Because of this, PyTorch has functionality to interact with it 
+
+Data in Numpy -> PyTorch tensor "torch.from_numpy(ndarray)"
+Pytorch tensor -> Numpy array "torch.Tensor.numpy()"
+"""
+
+array = np.arange(1.0, 8.0) 
+tensor = torch.from_numpy(array) # Warning: when converting from Numpy to PyTorch, PyTorch reflects Numpy's datatype of float64, unless specified otherwise
+
+# Change the value of array, what will this do to "tensor"?
+array = array +  1
+
+
+# Tensor to Numpy array 
+tensor = torch.ones(7) 
+numpy_tensor = torch.Tensor.numpy(tensor) 
+
+print(tensor.dtype, numpy_tensor.dtype)
+
+
