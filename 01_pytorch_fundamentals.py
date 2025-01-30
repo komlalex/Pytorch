@@ -299,7 +299,7 @@ Pytorch tensor -> Numpy array "torch.Tensor.numpy()"
 array = np.arange(1.0, 8.0) 
 tensor = torch.from_numpy(array) # Warning: when converting from Numpy to PyTorch, PyTorch reflects Numpy's datatype of float64, unless specified otherwise
 
-# Change the value of array, what will this do to "tensor"?
+# Change the value of array, what will this do to "tensor"? (not affected)
 array = array +  1
 
 
@@ -307,6 +307,37 @@ array = array +  1
 tensor = torch.ones(7) 
 numpy_tensor = torch.Tensor.numpy(tensor) 
 
-print(tensor.dtype, numpy_tensor.dtype)
 
+"""
+Reproducibility (trying to take random out of random) 
+
+In short, how a neural network works is: 
+    
+Start with random  -> tensor operations  -> update random numbers to try and make them better representations of the data -> again -> again ...
+
+To reduce the randomness in neural networks and PyTorch comes the concept of "random seed" 
+
+Essentially what random seed does is "flavour" the randomness
+
+""" 
+random_tensorA = torch.rand(3, 4) 
+random_tensorB = torch.rand(3, 4) 
+
+# print(tensor_A) 
+# print(tensor_B) 
+# print(random_tensorA == random_tensorB)
+ 
+# let's make some random but reproducible tensors
+# Set the random seed 
+RANDOM_SEED = 42 
+
+torch.manual_seed(RANDOM_SEED)   
+random_tensorC = torch.rand(3, 4)
+
+torch.manual_seed(RANDOM_SEED)
+random_tensor_D = torch.rand(3, 4) 
+
+print(random_tensorC) 
+print(random_tensor_D) 
+print(random_tensorC == random_tensor_D)
 
