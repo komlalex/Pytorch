@@ -9,7 +9,8 @@ Created on Thu Jan 30 08:34:46 2025
 
 import torch 
 from torch import nn # Contains all of PyTorch's building blocks for neural networks
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
+import numpy as np
 
 
 """ 1. DATA (PREPARING AND LOADING) 
@@ -189,10 +190,16 @@ A couple of things we need in a training loop:
 """
 
 """An epoch is one loop through the data"""
-epochs = 500
+epochs = 300
+
+epoch_count = [] 
+train_loss_values = [] 
+test_loss_values = []
+
 
 # 0. Loop through the data
 for epoch in range(epochs): 
+    epoch_count.append(epoch)
     # Set the model to training mode
     model_0.train() # Train mode sets all parameters that require gradients to require gradients 
     
@@ -201,7 +208,8 @@ for epoch in range(epochs):
     
     # 2. Calculate the loss (how different the model's predictions are to the true values)
     loss = loss_fn(y_pred, Y_train)
-    print(f"Loss: {loss}")
+    train_loss_values.append(loss) 
+    
     # 3. Optimizer zeor grad 
     optimizer.zero_grad() 
     
@@ -213,12 +221,40 @@ for epoch in range(epochs):
     optimizer.step()
     #model_0.eval()
 
-# Print out model state_dict() 
+    # Testing 
+    model_0.eval()  # This turns off different settings not needed for evaluation/testing (dropout, batch norm)
+    with torch.inference_mode(): # turns off gradient tracking and a couple more things behind the scenes
+        # Do the forward pass
+        test_pred = model_0(X_test)  
+    
+        # calculate loss 
+        test_loss = loss_fn(test_pred, Y_test)
+        test_loss_values.append(test_loss)
+    # Print out what's happening
+    if epoch % 10 == 0:
+        print(f"Epoch: {epoch} | Loss: {loss} | Test loss: {test_loss}")
+    
+    
+# Plot the loss curves 
+plt.plot(epoch_count, np.array(torch.tensor(train_loss_values).numpy()), label="Train Loss")
+plt.plot(epoch_count, np.array(torch.tensor(test_loss_values).numpy()), label="Test Loss") 
+plt.title("Training and test loss curves") 
+plt.ylabel("Loss") 
+plt.xlabel("Epochs") 
+plt.legend()
+plt.show()
+
+
+
+
+
+
 with torch.inference_mode(): 
-    y_preds = model_0(X_test) 
+    y_preds = model_0(X_test)
     
 plot_predictions(predictions=y_preds)
-print(f"Parameters: {model_0.state_dict()}")
+print(f"Parameters: {model_0.state_dict()}") 
+
 
 
 
