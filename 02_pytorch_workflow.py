@@ -76,7 +76,7 @@ def plot_predictions(train_data=X_train,
     plt.legend(prop={"size": 14}) 
     plt.show()
 
-#plot_predictions()  
+plot_predictions()  
 
 
 """BUILD OUR FIRST PYTORCH MODEL
@@ -146,7 +146,7 @@ When we pass data to our model, it's going to run it through the forward() metho
 with torch.inference_mode(): 
      y_preds = model_0(X_test) 
 
-#plot_predictions(predictions=y_preds)
+plot_predictions(predictions=y_preds)
 # print(y_preds) 
 
 """ 
@@ -252,8 +252,8 @@ plt.show()
 with torch.inference_mode(): 
     y_preds = model_0(X_test)
     
-plot_predictions(predictions=y_preds)
-print(f"Parameters: {model_0.state_dict()}") 
+#plot_predictions(predictions=y_preds)
+#print(f"Parameters: {model_0.state_dict()}") 
 
 
 
