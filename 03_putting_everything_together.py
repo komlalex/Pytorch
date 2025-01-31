@@ -91,13 +91,28 @@ my_model.eval()
 with torch.inference_mode(): 
     y_preds = my_model(x_test) 
 
-    y_preds = y_preds.cpu()
-    plot_predictions(predictions=y_preds)
+    plot_predictions(predictions=y_preds.cpu())
+
+# SAVE MODEL 
+MODEL_PATH = Path("models") 
+MODEL_PATH.mkdir(parents=True, exist_ok=True)
+MODEL_NAME = "complete_linear_model.pth" 
+
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME 
+
+torch.save(my_model.state_dict(), MODEL_SAVE_PATH) 
 
 
 
 
-print(my_model.state_dict())
-#test_loss_values = np.array(torch.tensor(test_loss_values).numpy())
-#plt.plot(epoch_values, test_loss_values) 
-#plt.show()
+
+
+
+
+
+
+
+
+
+
+
