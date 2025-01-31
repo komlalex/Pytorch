@@ -87,21 +87,36 @@ for epoch in range(epochs):
     if epoch % 10 == 0: 
         print(f"Epoch: {epoch}, Loss: {loss} Test loss: {test_loss}") 
 
+
 my_model.eval()
 with torch.inference_mode(): 
     y_preds = my_model(x_test) 
 
     plot_predictions(predictions=y_preds.cpu())
 
-# SAVE MODEL 
+
+# SAVE MODEL'S STATE DICT 
 MODEL_PATH = Path("models") 
 MODEL_PATH.mkdir(parents=True, exist_ok=True)
 MODEL_NAME = "complete_linear_model.pth" 
 
 MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME 
 
-torch.save(my_model.state_dict(), MODEL_SAVE_PATH) 
+torch.save(obj=my_model.state_dict(), f=MODEL_SAVE_PATH) 
 
+# RELOAD MODEL 
+torch.manual_seed(42)
+loaded_model = LinearRegressionModel() 
+loaded_model.load_state_dict(torch.load(MODEL_SAVE_PATH, weights_only=True)) 
+loaded_model.to(device) 
+
+
+# Evaluate loaded model 
+loaded_model.eval() 
+
+with torch.inference_mode(): 
+    loaded_model_preds = loaded_model(x_test)  
+    print(y_preds == loaded_model_preds)
 
 
 
