@@ -11,6 +11,7 @@ import torch
 from torch import nn # Contains all of PyTorch's building blocks for neural networks
 import matplotlib.pyplot as plt 
 import numpy as np
+from pathlib import Path
 
 
 """ 1. DATA (PREPARING AND LOADING) 
@@ -76,7 +77,7 @@ def plot_predictions(train_data=X_train,
     plt.legend(prop={"size": 14}) 
     plt.show()
 
-plot_predictions()  
+#plot_predictions()  
 
 
 """BUILD OUR FIRST PYTORCH MODEL
@@ -146,7 +147,7 @@ When we pass data to our model, it's going to run it through the forward() metho
 with torch.inference_mode(): 
      y_preds = model_0(X_test) 
 
-plot_predictions(predictions=y_preds)
+#plot_predictions(predictions=y_preds)
 # print(y_preds) 
 
 """ 
@@ -253,10 +254,47 @@ with torch.inference_mode():
     y_preds = model_0(X_test)
     
 #plot_predictions(predictions=y_preds)
-#print(f"Parameters: {model_0.state_dict()}") 
+
+"""
+SAVING OUR PYTORCH MODEL
+ There are three main methods you should know about for saving and loading models in PyTorch
+ 1. torch.save() -- Allows you to save a PyTorch object in Python's pickle format
+ 2. torch.load() -- allows you to load a saved PyTorch object 
+ 3. torch.nn.Module.load_state_dict() - allows you to load a model's saved state dictionary 
+"""
+# Create model directory 
+MODEL_PATH = Path("models")
+MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
+# Create model save path 
+MODEL_NAME = "01_pytorch_workflow_model.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME  
+
+# SAVE THE MODEL STATE DICT 
+torch.save(model_0.state_dict(), MODEL_SAVE_PATH)
 
 
+"""
+LOADING OUR PYTORCH MODEL
 
+Since we saved our model's state_dict() instead of the entire
+model, we'll create a new instance of our model class and load 
+the saved state_dict() into that.
+"""
+# Create new instance
+loaded_model = LinearRegressionModel() 
+
+# Load the saved state_dict() of model_0 
+loaded_model.load_state_dict(torch.load(f=MODEL_SAVE_PATH, weights_only=True)) 
+
+# Make some predictions 
+loaded_model.eval() 
+
+with torch.inference_mode(): 
+    loaded_model_preds = loaded_model(X_test) 
+
+# Compare loaded model's predictions to original model's predictions 
+print(y_preds == loaded_model_preds)
 
 
 
