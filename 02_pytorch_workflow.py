@@ -97,7 +97,7 @@ class LinearRegressionModel(nn.Module): # Almost everything in PyTorch inherits 
         self.bias = nn.Parameter(torch.randn(1, requires_grad=True, dtype=torch.float32))
     
     # Forward method to define the computation in the model 
-    def forward(self, x: torch.Tensor): 
+    def forward(self, x: torch.Tensor) -> torch.Tensor: 
         return self.weights * x + self.bias # The linear regression formula 
 
 """
@@ -140,8 +140,125 @@ When we pass data to our model, it's going to run it through the forward() metho
 """
 
 # Make predictions with model 
+# Using inference mode make our predictions run faster. It is fairly new.
+# We can also do something similar with torch.no_grad(), however, torch.inference_mode() is more preferable
 with torch.inference_mode(): 
      y_preds = model_0(X_test) 
 
 plot_predictions(predictions=y_preds)
-print(y_preds)
+# print(y_preds) 
+
+""" 
+TRAIN MODEL 
+
+The whole idea of training is for a model to movev from some unoknown parameters to known parameters  
+
+In other words from a poor representation of the data to a better representation of the data
+
+One way to measure how poor or how wrong your model's predictions are is to use a loss function
+
+Note: Loss functions may also be called cost functions or criterion in different areas. For our case, are going to refer to it as as loss function.
+
+THINGS WE NEED TO TRAIN
+1. Loss function: A function measure how wrong your model prediction is to the idea outputs. Lower is better 
+2. Optimizer: Takes into account the loss of a model and adjusts the model's parameters (e.g.weight and bias) to improve the loss function 
+
+Typicallly for PyTorch, we need: 
+    1. Training loop
+    2. Testing loop
+
+"""
+
+# Setup a loss functiom 
+loss_fn = nn.L1Loss()
+
+# Setup an optimizer (stochastic gradient descent)
+optimizer = torch.optim.SGD(params  = model_0.parameters(), 
+                            lr = 0.01) # learning rate = possibly the most import hyperparameter you can set
+
+"""
+Building aa training loop 
+
+A couple of things we need in a training loop: 
+0. Loop through the data 
+1. Forward pass (This involves data moving through our forward() functions) - also called forward propagation
+2. Calculate the loss (compare forward pass predictions to ground truth labels)
+3. Optimizer zero grad
+4. Loss backward - move backwards through the network to calculate the gradient of of the parameters of our model with respect to the loss (back propagation)
+5. Optimizer step - use the optimizer to adjust our model's parameters to try and improve the loss (gradient descent)
+"""
+
+"""An epoch is one loop through the data"""
+epochs = 500
+
+# 0. Loop through the data
+for epoch in range(epochs): 
+    # Set the model to training mode
+    model_0.train() # Train mode sets all parameters that require gradients to require gradients 
+    
+    # 1. Forward pass
+    y_pred = model_0(X_train)
+    
+    # 2. Calculate the loss (how different the model's predictions are to the true values)
+    loss = loss_fn(y_pred, Y_train)
+    print(f"Loss: {loss}")
+    # 3. Optimizer zeor grad 
+    optimizer.zero_grad() 
+    
+    
+    # 4. Perform back propagation
+    loss.backward()
+    
+    # 5. Step the optimizer (perform gradient descent) 
+    optimizer.step()
+    #model_0.eval()
+
+# Print out model state_dict() 
+with torch.inference_mode(): 
+    y_preds = model_0(X_test) 
+    
+plot_predictions(predictions=y_preds)
+print(f"Parameters: {model_0.state_dict()}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
