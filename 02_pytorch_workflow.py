@@ -42,7 +42,7 @@ bias = 0.3
 start = 0 
 end= 1 
 step = 0.02 
-X = torch.arange(start, end, step).unsqueeze_(dim=1) 
+X = torch.arange(start, end, step).unsqueeze(dim=1) 
 Y = weight * X + bias 
 
 # Splitting data into training and testing sets 
