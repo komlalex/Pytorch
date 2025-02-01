@@ -9,6 +9,7 @@ can multiple things as options)
 # Make classification data and get it ready 
 
 import torch
+from torch import nn
 import sklearn
 from sklearn.datasets import make_circles 
 from sklearn.model_selection import train_test_split
@@ -71,4 +72,40 @@ x_train, x_test, y_train, y_test = train_test_split(x,
                                                     random_state=42) # 20% for test, 80% for train
 
 
-print(len(y_train), len(y_test))
+# Building a model 
+
+"""
+Let's build a model to classify our blue and red dots.
+To do so, we want to: 
+1. Setup device agnostic code
+2. Construct a model (by subclassing nn.Module)
+3. Define a loss function and optimizer 
+4. Create a training and testing loop
+"""
+
+# Make device agnostic code
+device = "cuda" if torch.cuda.is_available() else "cpu"  
+
+"""
+CREATE OUR MODEL: 
+1. Subclass nn.Module
+2. Create 2 nn.Linear() layers that are capable of handling the shapes of our data 
+3. Define a forward() method that outlines the forward pass (or forward computation)
+4. Instantiate an instance of our model class and send it to our target `device`.
+"""
+
+class CircleModelV0(nn.Module): 
+    def __init__(self):
+        super().__init__() 
+        self.layer_1 = nn.Linear(in_features=2, out_features=5) # Takes in 2 featurs and upscales to 5 features
+        self.layer_2 = nn.Linear(in_features=5, out_features=1) # Takes in 5 features from previous layer and outputs a single features
+
+    def forward(self, x: torch.Tensor) ->   torch.Tensor: 
+        return self.layer_2(self.layer_1(x)) 
+    
+
+# Instantiate an instance of our model class and send it to the target device 
+model_0 = CircleModelV0().to(device) 
+
+
+print(model_0.state_dict())
