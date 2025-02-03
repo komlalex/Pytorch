@@ -13,7 +13,7 @@ from sklearn.datasets import make_circles
 from sklearn.model_selection import train_test_split 
 import torch 
 from torch import nn
-from helper_functions import accuracy_fn
+from helper_functions import accuracy_fn, plot_decision_boundary
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -76,7 +76,7 @@ x_test, y_test = x_test.to(device), y_test.to(device)
 
 
 # Loop through data 
-epochs = 4000 
+epochs = 3000 
 
 for epoch in range(epochs): 
     model_0.train() 
@@ -106,3 +106,24 @@ for epoch in range(epochs):
 
     if epoch % 100 == 0: 
         print(f"Epoch: {epoch} | Loss: {loss: .5f} | Acc: {acc: .2f}% | Test loss: {test_loss: .5f} | Test acc: {test_acc: .2f}%")
+
+"""
+Evaluating our trained model 
+"""
+model_0.eval() 
+
+with torch.inference_mode(): 
+    y_pred = torch.round(torch.sigmoid(model_0(x_test))).squeeze() 
+
+    print(torch.eq(y_pred, y_test)) 
+
+# Plot decision boundary 
+
+plt.figure(figsize=(12, 6)) 
+plt.subplot(1, 2, 1) 
+plt.title("train") 
+plot_decision_boundary(model_0, x_train, y_train) 
+plt.subplot(1, 2, 2) 
+plt.title("Test") 
+plot_decision_boundary(model_0, x_test, y_test) 
+plt.show()
