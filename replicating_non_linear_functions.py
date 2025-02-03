@@ -16,15 +16,26 @@ A = torch.arange(-10, 10, 1, dtype=torch.float32)
 #plt.plot(A) 
 #plt.show()
 
+"""relu"""
 #plt.plot(torch.relu(A))
 #plt.show() 
 
 def relu(x: torch.Tensor) -> torch.Tensor: # both input and output must be tensors
     return torch.maximum(torch.tensor(0), x)  
 
-print(relu(A)) 
-print(torch.relu(A)) 
 
 # Visualize 
-plt.plot(relu(A))
+#plt.plot(relu(A))
+#plt.show()
+
+
+"Sigmoid" 
+
+def sigmoid(x: torch.Tensor) -> torch.Tensor: 
+    return 1 / (1 + torch.exp(-x)) 
+
+plt.plot(torch.sigmoid(A), c="y") 
 plt.show()
+
+#plt.plot(sigmoid(A), c="g") 
+#plt.show()
