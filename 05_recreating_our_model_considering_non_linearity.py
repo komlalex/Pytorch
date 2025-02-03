@@ -126,4 +126,17 @@ plot_decision_boundary(model_0, x_train, y_train)
 plt.subplot(1, 2, 2) 
 plt.title("Test") 
 plot_decision_boundary(model_0, x_test, y_test) 
+#plt.show() 
+
+"""
+REPLICATING NON-LINEAR ACTIVATION FUNCTIONS
+Neural networks, rather than us telling the model what to learn, 
+we give it the tools to discover patterns in data and it tries to figures out the patterns on its own. 
+
+And these tools are linear & non-linear functions
+"""  
+# Create a tensor 
+A = torch.arange(-10, 10, 1, dtype=torch.float32) 
+
+plt.plot(A)
 plt.show()
