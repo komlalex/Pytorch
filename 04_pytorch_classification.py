@@ -365,4 +365,114 @@ plot_decision_boundary(model_1, x_train, y_train)
 plt.subplot(1, 2, 2) 
 plt.title("Test") 
 plot_decision_boundary(model_1, x_test, y_test) 
+# plt.show()
+
+"""
+PREPARING DATA TO SEE IF OUR MODEL CAN FIT A STRAIGHT LINE
+One way to troubleshoot a larger problem is to test pit a smaller problem. 
+
+""" 
+# Create some data 
+weight= 0.7 
+bias = 0.3 
+start, end = 0, 1 
+step = 0.01
+
+x_regression = torch.arange(start, end, step).unsqueeze(dim=1)  
+y_regression = weight * x_regression + bias 
+
+train_split = int(0.8 * len(x_regression))  
+
+x_train_reg, y_train_reg = x_regression[:train_split], y_regression[:train_split] 
+x_test_reg, y_test_reg  = x_regression[train_split:], y_regression[train_split:]
+
+print(len(x_train_reg), len(y_train_reg)) 
+print(len(x_test_reg), len(y_test_reg)) 
+
+# Plot predictions 
+from helper_functions import plot_predictions 
+
+plot_predictions(x_train_reg, y_train_reg, x_test_reg, y_test_reg)
+
+
+
+"""
+Adjusting model_1 to fit a straight line
+"""
+
+# Same architecture as model_1 using sequential 
+
+model_2 = nn.Sequential(
+    nn.Linear(in_features=1, out_features=10), 
+    nn.Linear(in_features=10, out_features=10), 
+    nn.Linear(in_features=10, out_features=1) 
+).to(device)
+
+print(model_2)
+
+# Loss optimizer 
+loss_fn = nn.L1Loss() 
+optimizer = torch.optim.SGD(params=model_2.parameters(), lr=0.01) 
+
+torch.manual_seed(42)
+torch.cuda.manual_seed(42) 
+# Train our model 
+epochs = 1000
+x_train_reg, y_train_reg = x_train_reg.to(device), y_train_reg.to(device)
+x_test_reg, y_test_reg = x_test_reg.to(device), y_test_reg.to(device)
+
+
+for epoch in range(epochs): 
+    model_2.train() 
+    y_pred = model_2(x_train_reg)  
+  
+    loss = loss_fn(y_pred, y_train_reg) 
+
+    optimizer.zero_grad() 
+
+    loss.backward() 
+
+    optimizer.step() 
+
+    # Test 
+    model_2.eval() 
+    with torch.inference_mode(): 
+        test_pred = model_2(x_test_reg) 
+        test_loss = loss_fn(test_pred, y_test_reg) 
+        
+
+    if epoch % 100 == 0: 
+        print(f"Epoch {epoch} | Loss: {loss: .5f} | Test loss: {test_loss: .5f} ")
+
+# Make predictions 
+model_2.eval() 
+
+with torch.inference_mode()  : 
+    y_pred = model_2(x_test_reg)
+
+#Plot predictions 
+plot_predictions(x_train_reg.cpu(),
+                  y_train_reg.cpu(), 
+                  x_test_reg.cpu(), 
+                  y_test_reg.cpu(), 
+                  predictions=test_pred.cpu()) 
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
