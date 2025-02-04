@@ -9,6 +9,7 @@ from torch import nn
 import matplotlib.pyplot as plt 
 from sklearn.datasets import make_blobs 
 from sklearn.model_selection import train_test_split 
+from helper_functions import accuracy_fn
 
 # Set hyperparameters for data creation 
 NUM_CLASSES = 4 
@@ -23,7 +24,7 @@ x_blob, y_blob = make_blobs(n_samples=1000,
                               random_state= RANDOM_SEED)
 # Turn data into datas 
 x_blob = torch.from_numpy(x_blob).type(torch.float32) 
-y_blob = torch.from_numpy(y_blob).type(torch.float32) 
+y_blob = torch.from_numpy(y_blob).type(torch.LongTensor) 
 
 #print(torch.unique(y_train))
 
@@ -67,8 +68,69 @@ class BlobModel(nn.Module):
 # Instantiate our mode  
 model_0 = BlobModel(input_features=2, 
                     output_features=4,
-                    hidden_units=8)  
+                    hidden_units=8).to(device)
 
-print(model_0)
+# Setup loss function and optimizer 
+loss_fn = nn.CrossEntropyLoss() 
+
+optimizer = torch.optim.SGD(params=model_0.parameters(), 
+                            lr=0.1) 
+
+"""
+In order to train and evalaute our model, we need to convert our model's 
+outputs(logits) to prediction probabilities and then to prediction labels
+logits -> probabilities (torch.softmax()) -> labels (torch.argmax())
+""" 
+# Getting prediction probabilities for a multi-clas PyTorch model 
+# Let's get the raw outputs of our model
+model_0.eval()
+with torch.inference_mode(): 
+    y_logits = model_0(x_test.to(device))
 
 
+# Convert our model's logit outputs to prediction probabilities 
+y_pred_probs  = torch.softmax(y_logits, dim=1)
+#print(torch.sum(y_pred_probs[0]))
+
+# Convert our model's prediction probabilities to labels 
+y_preds = torch.argmax(y_pred_probs, dim=1)
+
+#print(y_preds)
+#print(y_test) 
+
+"""
+Creating our training and testing loops for our model
+"""
+torch.manual_seed(42) 
+torch.cuda.manual_seed(42)
+x_train, y_train = x_train.to(device), y_train.to(device)
+x_test, y_test = x_test.to(device), y_test.to(device)  
+
+epochs = 1000 
+
+for epoch in range(epochs): 
+    model_0.train() 
+    
+    y_logits = model_0(x_train) 
+    y_preds = torch.softmax(y_logits, dim=1).argmax(dim=1)
+    #y_preds = torch.argmax(y_probs, dim=1)
+    acc = accuracy_fn(y_train, y_preds)
+    loss = loss_fn(y_logits, y_train) 
+
+    optimizer.zero_grad() 
+
+    loss.backward() 
+
+    optimizer.step()
+
+    # Test 
+    model_0.eval() 
+    with torch.inference_mode(): 
+        test_logits = model_0(x_test)
+        test_preds = torch.softmax(test_logits, dim=1).argmax(dim=1) 
+
+        test_loss = loss_fn(test_logits, y_test)
+        test_acc = accuracy_fn(y_test, test_preds)
+
+    if epoch % 100 == 0: 
+        print(f"Epoch {epoch} | Loss: {loss: .5f} | Acc: {acc:.2f}% : Test Loss: {test_loss: .5f} | Test Acc {test_acc: .2f}%")
