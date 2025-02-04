@@ -9,7 +9,7 @@ from torch import nn
 import matplotlib.pyplot as plt 
 from sklearn.datasets import make_blobs 
 from sklearn.model_selection import train_test_split 
-from helper_functions import accuracy_fn
+from helper_functions import accuracy_fn, plot_decision_boundary
 
 # Set hyperparameters for data creation 
 NUM_CLASSES = 4 
@@ -56,9 +56,9 @@ class BlobModel(nn.Module):
         super().__init__()
         self.linear_layer_stack = nn.Sequential(
             nn.Linear(in_features=input_features, out_features=hidden_units),
-            nn.ReLU(),
+            #nn.ReLU(),
             nn.Linear(in_features=hidden_units, out_features=hidden_units),
-            nn.ReLU(),
+            #nn.ReLU(),
             nn.Linear(in_features=hidden_units, out_features=output_features)
         )
 
@@ -134,3 +134,23 @@ for epoch in range(epochs):
 
     if epoch % 100 == 0: 
         print(f"Epoch {epoch} | Loss: {loss: .5f} | Acc: {acc:.2f}% : Test Loss: {test_loss: .5f} | Test Acc {test_acc: .2f}%")
+
+"""Making predictions"""
+model_0.eval() 
+with torch.inference_mode(): 
+    y_logits = model_0(x_test) 
+    y_probs = torch.softmax(y_logits, dim=1)
+    y_preds = torch.argmax(y_probs, dim=1) 
+
+    print(torch.eq(y_preds, y_test))
+
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.title("Train")
+plot_decision_boundary(model_0, x_train, y_train)
+
+plt.subplot(1, 2, 2)
+plt.title("Test")
+plot_decision_boundary(model_0, x_test, y_test)
+plt.plot()
+plt.show()
