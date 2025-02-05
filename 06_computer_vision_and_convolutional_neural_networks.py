@@ -20,8 +20,13 @@ from torchvision import transforms
 from torchvision.transforms import ToTensor 
 
 # Import matplotlib for visualization 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt  
 
+# Import timeit 
+from timeit import default_timer as timer
+
+# Import accuracy metric from helper_functions.py 
+from helper_functions import accuracy_fn
 # Check versions 
 #print(torch.__version__) 
 #print(torchvision.__version__)
@@ -187,6 +192,35 @@ model_0 = FashionMNISTModelV0(input_shape=784, # 28 * 28
                               hidden_units= 10,
                               output_shape= len(class_names) # One for every class
                               ).to("cpu")
-dummy_x = torch.rand([1, 1, 28, 28])
 
-print(model_0(dummy_x))
+"""
+Setup loss, optimizer aand evaluation metrics 
+Loss function - since we're working with multi-class multi-class data, our loss function will be 
+nn.CrossEntropyLoss() 
+
+Optimizer - our optimizer torch.optim.SGD( (stochastic gradient descent))
+Evaluation metrics - since we're working on a classification problem, let's use accuracy as our evaluation metric
+"""
+
+# Setup loss function and optimizer 
+loss_fn = nn.CrossEntropyLoss() 
+optimizer = torch.optim.SGD(params=model_0.parameters(), lr=0.1) 
+
+"""
+Creating a function to time our experimental. 
+
+Two of the main things you'll often want to track are: 
+1. Model's performance (loss and accuracy values etc)
+2. How fast it runs 
+"""
+def print_train_time(start: float,
+                     end: float,
+                     device: torch.device=None): 
+    """Prints difference between start and end time""" 
+    total_time = end - start
+    print(f"Train time on {device}: {total_time: .3f} seconds") 
+
+start_time = timer() 
+# some code
+end_time = timer() 
+print_train_time(start_time, end_time, device="cpu")
