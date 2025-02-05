@@ -56,9 +56,9 @@ class BlobModel(nn.Module):
         super().__init__()
         self.linear_layer_stack = nn.Sequential(
             nn.Linear(in_features=input_features, out_features=hidden_units),
-            #nn.ReLU(),
+            nn.ReLU(),
             nn.Linear(in_features=hidden_units, out_features=hidden_units),
-            #nn.ReLU(),
+            nn.ReLU(),
             nn.Linear(in_features=hidden_units, out_features=output_features)
         )
 
@@ -139,8 +139,8 @@ for epoch in range(epochs):
 model_0.eval() 
 with torch.inference_mode(): 
     y_logits = model_0(x_test) 
-    y_probs = torch.softmax(y_logits, dim=1)
-    y_preds = torch.argmax(y_probs, dim=1) 
+    y_preds = torch.softmax(y_logits, dim=1).argmax(dim=1)
+    
 
     print(torch.eq(y_preds, y_test))
 
@@ -153,4 +153,24 @@ plt.subplot(1, 2, 2)
 plt.title("Test")
 plot_decision_boundary(model_0, x_test, y_test)
 plt.plot()
-plt.show()
+#plt.show() 
+
+"""
+A few more classification metrics
+1. Accuracy: out of 100 samples, how many does our model get right? 
+2. Precision: 
+3 Recall: 
+4. Confusion matrix: 
+5. Classification report: 
+6. F1-Score
+
+If you want access to a lot of PyTorch metrics, see Torchmetrics
+"""
+#from torchmetrics.classification import MulticlassAccuracy
+from torchmetrics import Accuracy
+
+# setup metric 
+torchmetric_accuracy = Accuracy(task="multiclass", num_classes=4).to(device)
+
+# Calculate accuracy 
+print(torchmetric_accuracy(y_preds, y_test))
