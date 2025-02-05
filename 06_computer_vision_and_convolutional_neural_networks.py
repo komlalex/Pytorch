@@ -56,7 +56,37 @@ image, label = train_data[0]
 #print(label)
 #print(train_data.classes) 
 class_to_idx = train_data.class_to_idx 
+class_names = train_data.classes
 #print(class_to_idx) 
 
 # Check shape of our image 
-print(f"Image shape {image.shape}")
+#print(f"Image shape {image.shape}") 
+
+# Visualizing our data 
+image, label , train_data[0] 
+print(f"Image shape {image.shape}") 
+
+plt.figure(figsize=(14, 7))
+plt.subplot(1, 2, 1)
+plt.imshow(image.squeeze())
+plt.title(label) 
+
+plt.subplot(1, 2, 2)
+plt.imshow(image.squeeze(), cmap="gray") 
+plt.title(class_names[label])
+#plt.show() 
+
+# Plot more images 
+torch.manual_seed(42) 
+fig = plt.figure(figsize=(9, 9)) 
+rows, cols = 4, 4 
+
+for i in range(1, rows*cols + 1): 
+    rand_idx  = torch.randint(0, len(train_data), size=[1]).item()
+    img, label = train_data[rand_idx]
+    fig.add_subplot(rows, cols, i)
+    plt.imshow(img.squeeze(), cmap="gray")
+    plt.title(class_names[label]) 
+    plt.axis(False)
+
+plt.show()
