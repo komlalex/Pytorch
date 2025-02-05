@@ -90,7 +90,7 @@ for i in range(1, rows*cols + 1):
     plt.title(class_names[label]) 
     plt.axis(False)
 
-plt.show() 
+#plt.show() 
 
 """
 Do you think these times of clothing (images) could be modelled with pure linear
@@ -133,19 +133,60 @@ test_dataloader = DataLoader(
 # Let's check what we've created 
 #ataloader, test_dataloader) 
 
-print(len(f"DataLoaders: {train_dataloader, test_dataloader}")) 
-print(f"Length of train_dataloader: {len(train_dataloader)} batches of {BATCH_SIZE}")
-print(f"Length of test_dataloader: {len(test_dataloader)} batches of {BATCH_SIZE}")
+#print(f"DataLoaders: {train_dataloader, test_dataloader}")
+#print(f"Length of train_dataloader: {len(train_dataloader)} batches of {BATCH_SIZE}")
+#print(f"Length of test_dataloader: {len(test_dataloader)} batches of {BATCH_SIZE}")
 
 # Check out what's in the training dataloader 
 train_features_batch, train_labels_batch = next(iter(train_dataloader)) 
 
-print(train_features_batch.shape, train_labels_batch.shape)
+#print(train_features_batch.shape, train_labels_batch.shape)
 # Show sample 
-#torch.manual_seed(42)  
+torch.manual_seed(42)  
 random_idx = torch.randint(0, len(train_features_batch), size=[1]).item()
 img, label = train_features_batch[random_idx], train_labels_batch[random_idx] 
 plt.imshow(img.squeeze(), cmap="gray")
 plt.title(class_names[label]) 
 plt.axis(False) 
-plt.show()
+#plt.show() 
+
+"""
+Model 0: Baseline model
+When starting to buils a series of machine learning experiments, it's best practice to start 
+with a baseline model.  
+A baseline model is a simple model you'll try to improve upon in subsequent models/ experiments. 
+In other words: start simply and add complexity when necessary. 
+""" 
+
+# Create a flatten layer 
+flatten_model = nn.Flatten() 
+
+# Get a single sample 
+x = train_features_batch[0]
+print(x.shape) 
+
+# Flatten the sample 
+output = flatten_model(x)
+print(output.shape) 
+
+class FashionMNISTModelV0(nn.Module): 
+    def __init__(self, input_shape: int, hidden_units: int, output_shape: int):
+        super().__init__() 
+        self.layer_stack = nn.Sequential(
+            nn.Flatten(), 
+            nn.Linear(in_features=input_shape, out_features=hidden_units),
+            nn.Linear(in_features=hidden_units, out_features=output_shape)
+        )
+    def forward(self, x: torch.Tensor) -> torch.Tensor: 
+        return self.layer_stack(x) 
+    
+torch.manual_seed(42) 
+
+# Setup model with input parameters 
+model_0 = FashionMNISTModelV0(input_shape=784, # 28 * 28
+                              hidden_units= 10,
+                              output_shape= len(class_names) # One for every class
+                              ).to("cpu")
+dummy_x = torch.rand([1, 1, 28, 28])
+
+print(model_0(dummy_x))
