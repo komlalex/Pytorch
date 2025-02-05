@@ -10,6 +10,7 @@
 # Import PyTorch
 import torch
 from torch import nn 
+from torch.utils.data import DataLoader
 
 
 # Import torchvision 
@@ -37,7 +38,7 @@ train_data = datasets.FashionMNIST(
     root="data", #where to download data to, 
     train= True, # do we want the training dataset?
     download= True, # do we want to download yes/no
-    transform=torchvision.transforms.ToTensor(), # how do we want to transform the data
+    transform= ToTensor(), # how do we want to transform the data
     target_transform= None # how do we want to transform the lables/targets?
 ) 
 
@@ -49,7 +50,7 @@ test_data = datasets.FashionMNIST(
     target_transform=None
 )
 
-print(len(train_data), len(test_data))
+#print(len(train_data), len(test_data))
 
 # See the first training example 
 image, label = train_data[0] 
@@ -64,7 +65,7 @@ class_names = train_data.classes
 
 # Visualizing our data 
 image, label , train_data[0] 
-print(f"Image shape {image.shape}") 
+#print(f"Image shape {image.shape}") 
 
 plt.figure(figsize=(14, 7))
 plt.subplot(1, 2, 1)
@@ -89,4 +90,62 @@ for i in range(1, rows*cols + 1):
     plt.title(class_names[label]) 
     plt.axis(False)
 
+plt.show() 
+
+"""
+Do you think these times of clothing (images) could be modelled with pure linear
+lines? Or do you think we'lll ned non-linearity?
+"""
+
+# Prepare DataLoader 
+"""
+Right now, our data is in the form of PyTorch Datasets 
+
+DataLoader turns our dataset into a Python iterable. 
+
+More specifically, we want to turn our data into batches (or min-batches)
+
+Wjy would we do this? 
+1. It is more computationally efficient, as in, your computing hardware may not be 
+able to look (store in memory) all 60000 images in one hit. So we break it down to 
+32 iamges at a time (batch size 32). 
+2. It gives our neural network more chances to upgrade its gradients per epoch
+"""
+
+# Setup the batch size parameter 
+
+BATCH_SIZE = 32
+
+# Turn dataset into iterables 
+train_dataloader = DataLoader(
+    dataset= train_data, 
+    batch_size= BATCH_SIZE, 
+    shuffle= True
+)
+
+test_dataloader = DataLoader(
+    dataset=test_data, 
+    batch_size= BATCH_SIZE,
+    shuffle= False 
+)
+
+
+# Let's check what we've created 
+#ataloader, test_dataloader) 
+
+print(len(f"DataLoaders: {train_dataloader, test_dataloader}")) 
+print(f"Length of train_dataloader: {len(train_dataloader)} batches of {BATCH_SIZE}")
+print(f"Length of test_dataloader: {len(test_dataloader)} batches of {BATCH_SIZE}")
+
+# Check out what's in the training dataloader 
+train_features_batch, train_labels_batch = next(iter(train_dataloader)) 
+
+print(train_features_batch.shape, train_labels_batch.shape)
+# Show sample 
+#torch.manual_seed(42)  
+random_idx = torch.randint(0, len(train_features_batch), size=[1]).item()
+img, label = train_features_batch[random_idx], train_labels_batch[random_idx] 
+plt.imshow(img.squeeze(), cmap="gray")
+plt.title(class_names[label]) 
+plt.axis(False) 
 plt.show()
