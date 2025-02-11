@@ -32,8 +32,6 @@ from helper_functions import accuracy_fn
 #print(torch.__version__) 
 #print(torchvision.__version__)
 
-# Set device agnostic  code 
-device = "cuda" if torch.cuda.is_available() else "cpu"
 """
 GETTING A DATASET 
 
@@ -345,3 +343,45 @@ loss_fn=loss_fn,
 accuracy_fn=accuracy_fn) 
 
 print(model_0_results)
+
+
+# Setup device agnostic code 
+device = "cuda" if torch.cuda.is_available() else "cpu" 
+
+
+
+"""
+BUIDLING A BETTER MODEL WITH NON-LINEARITY 
+
+We learned about the power of non-linearity in notebook 02 
+
+"""
+class FashionMNISTModelV1(nn.Module): 
+    def __init__(self, 
+                input_shape: int, 
+                hidden_units: int, 
+                output_shape: int):
+        super().__init__()
+
+        self.layer_stack = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(in_features=input_shape, out_features=hidden_units), 
+            nn.ReLU(),
+            nn.Linear(in_features=hidden_units, out_features=output_shape),
+            nn.ReLU()
+        )
+
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor: 
+        self.layer_stack(x) 
+
+
+# Create an instance of model_1 
+torch.manual_seed(42)
+model_1 = FashionMNISTModelV1(
+    input_shape= 784, # Thisiis the output of the flatten layer after our 28 * 28 imgae goes in 
+    hidden_units= 10 ,
+    output_shape= len(class_names)
+).to(device)
+
+print(next(model_1.parameters()).device)
