@@ -19,6 +19,7 @@ from torchvision import datasets
 from torchvision import transforms 
 from torchvision.transforms import ToTensor 
 
+
 # Import matplotlib for visualization 
 import matplotlib.pyplot as plt  
 
@@ -31,6 +32,8 @@ from helper_functions import accuracy_fn
 #print(torch.__version__) 
 #print(torchvision.__version__)
 
+# Set device agnostic  code 
+device = "cuda" if torch.cuda.is_available() else "cpu"
 """
 GETTING A DATASET 
 
@@ -69,7 +72,7 @@ class_names = train_data.classes
 #print(f"Image shape {image.shape}") 
 
 # Visualizing our data 
-image, label , train_data[0] 
+image, label = train_data[0] 
 #print(f"Image shape {image.shape}") 
 
 plt.figure(figsize=(14, 7))
@@ -219,8 +222,90 @@ def print_train_time(start: float,
     """Prints difference between start and end time""" 
     total_time = end - start
     print(f"Train time on {device}: {total_time: .3f} seconds") 
+    return total_time
 
+
+""""
+Creating a training loop and training the model on batches of data 
+1. Loop through training epochs
+2. Loop through training batches, performing training steps, calculate the train loss "per batch"
+3. Looop through testing batches, performing testing steps, calcualate test loss "per batch"
+4. Print out what's happening 
+5. Time it all (for fun)
+"""
+
+# Import tqdm for progress bar
+from tqdm.auto import tqdm 
+
+# Set the seed and start the timer 
+torch.manual_seed(42)
 start_time = timer() 
-# some code
-end_time = timer() 
-print_train_time(start_time, end_time, device="cpu")
+
+# Set the number of epochs 
+epochs = 3 
+
+
+# Create training and test loop
+for epoch in tqdm(range(epochs)): 
+    print(f"Epoch: {epoch} \n")
+
+    #Training 
+    train_loss = 0
+
+    # Add a loop to loop through the training bacthes
+    for batch, (x, y) in enumerate(train_dataloader):
+        model_0.train() 
+
+        # Forward pass 
+        y_pred = model_0(x)  
+
+        # Calculate the loss (per batch) 
+        loss = loss_fn(y_pred, y) 
+        train_loss += loss # Accumulate the loss 
+
+        # Optimizer zero grad 
+        optimizer.zero_grad() 
+
+        # Loss backward 
+        loss.backward() 
+
+        # Optimizer step 
+        optimizer.step() 
+
+        # print out what's happening 
+
+        if batch % 400 == 0: 
+            print(f"Looked at {batch * len(x)} / {len(train_dataloader.dataset)} samples")
+    
+    # Divide total train loss by the length of the train loader 
+    train_loss /= len(train_dataloader)
+
+    # Testing 
+
+    test_loss, test_acc = 0, 0 
+    model_0.eval() 
+    with torch.inference_mode(): 
+        for x_test, y_test in test_dataloader: 
+
+            # Forward pass 
+            test_pred = model_0(x_test) 
+
+            # Calculate loss (accumulatively)
+            test_loss += loss_fn(test_pred, y_test)
+
+            # Calculate accuracy 
+            test_acc += accuracy_fn(y_true=y_test, y_pred=test_pred.argmax(dim=1))
+    
+    # Calculate the test loss average per batch 
+        test_loss /= len(test_dataloader)
+    # Calculate the test acc average per batch 
+        test_acc /= len(test_dataloader)  
+
+    # Print out what is happening 
+    print(f"\nTrain Loss: {train_loss: .4f} | Test Loss: {test_loss: .4f} | Test acc: {test_acc: .4f}")
+
+
+end_time = timer()  
+print_train_time(start_time, end_time, device=str(next(model_0.parameters()).device))
+
+
