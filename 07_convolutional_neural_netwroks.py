@@ -232,16 +232,17 @@ class FashionMNISTV2(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Flatten(), 
-            nn.Linear(in_features=hidden_units*0, # There's a trick to calculating this ..
+            nn.Linear(in_features= hidden_units * 7 * 7, # There's a trick to calculating this ..
                       out_features=output_shape)
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
         x = self.conv_block_1(x) 
-        print(x.shape)
+        print(f"Output shape of conv_block_1: {x.shape}")
         x = self.con_block_2(x) 
-        print(x.shape) 
+        print(f"Outoput shape of conv_block_2: {x.shape}") 
         x = self.classifier(x) 
+        print(f"Output shape of classifier: {x.shape}")
         return x
     
 torch.manual_seed(42) 
@@ -264,8 +265,9 @@ print(f"Single image shape: {test_image.shape}")
 # Create a single Con2d layer 
 conv_layer = nn.Conv2d(
     in_channels=3, 
-    out_channels=64, 
+    out_channels=10, 
     kernel_size= (3, 3), 
+    stride= 1,
     padding=1
 
 )
@@ -275,3 +277,44 @@ conv_output = conv_layer(test_image)
 
 print(conv_output.shape)
 
+
+""" Breaking own the nn.MaxPool2d layers step-by-step """
+# Print original image without unsqueezed dimension
+print(f"Test iamges original shape: {test_image.shape}")
+print(f"Test images with unsqeezed dimension: {test_image.unsqueeze(0).shape}")
+
+
+# Create a sample nn.MaxPool2d layer 
+max_pool_layer = nn.MaxPool2d(kernel_size=4) 
+
+# Pass data through just the con_layer 
+test_image_through_conv = conv_layer(test_image) 
+print(f"Shape after going through conv_layer(): {test_image_through_conv.shape}")
+
+
+# Pass data through the max pool layer 
+test_image_through_conv_and_max_pool = max_pool_layer(test_image_through_conv)
+print(f"Shape after going through conv and max pool {test_image_through_conv_and_max_pool.shape}")
+
+
+torch.manual_seed(42) 
+
+# Create a random tensor with a smaller number of dimensions to our image
+random_tensor = torch.randn(1, 1, 2, 2) 
+
+# Create a max pool layer 
+max_pool_layer = nn.MaxPool2d(kernel_size=2) 
+
+# Pass the radnom tensor through the max pool layer 
+max_pool_tensor = max_pool_layer(random_tensor)
+#print(f"Random tensor shape: {random_tensor.shape}")
+#print(f"Max pool tensor shape: {max_pool_tensor.shape}") 
+
+image, label = train_data[0] 
+plt.imshow(image.squeeze(), cmap="gray") 
+plt.title(label)
+#plt.show() 
+
+rand_image_tensor = torch.randn(size=(1, 28, 28)).to(device)
+# Pass image through modle 
+model_2(rand_image_tensor.unsqueeze(0))
