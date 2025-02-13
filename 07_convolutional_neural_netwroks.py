@@ -238,11 +238,11 @@ class FashionMNISTV2(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
         x = self.conv_block_1(x) 
-        print(f"Output shape of conv_block_1: {x.shape}")
+        #print(f"Output shape of conv_block_1: {x.shape}")
         x = self.con_block_2(x) 
-        print(f"Outoput shape of conv_block_2: {x.shape}") 
+        #print(f"Outoput shape of conv_block_2: {x.shape}") 
         x = self.classifier(x) 
-        print(f"Output shape of classifier: {x.shape}")
+        #print(f"Output shape of classifier: {x.shape}")
         return x
     
 torch.manual_seed(42) 
@@ -317,4 +317,38 @@ plt.title(label)
 
 rand_image_tensor = torch.randn(size=(1, 28, 28)).to(device)
 # Pass image through modle 
-model_2(rand_image_tensor.unsqueeze(0))
+model_2(rand_image_tensor.unsqueeze(0)) 
+
+
+
+
+# Set up an optimizer and loss function
+loss_fn = nn.CrossEntropyLoss() 
+optimizer = torch.optim.SGD(params=model_2.parameters(), lr=0.1) 
+
+
+# Training and testing model_2 using our training and testing functions
+
+torch.manual_seed(42) 
+torch.cuda.manual_seed(42) 
+
+start_time = timer() 
+
+# Train and test model 
+epochs = 3 
+for epoch in tqdm(range(epochs)): 
+    print(f"Epoch {epoch}...") 
+    train_step(model=model_2, 
+                data_loader=train_dataloader, 
+                loss_fn=loss_fn, 
+                optimizer=optimizer, 
+                accuracy_fn=accuracy_fn, 
+                device=device) 
+    test_step(model=model_2, 
+              data_loader=test_dataloader, 
+              loss_fn=loss_fn, 
+              accuracy_fn=accuracy_fn, 
+              device=device)
+end_time = timer() 
+
+print_train_time(start=start_time, end=end_time, device=device)
