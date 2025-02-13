@@ -533,4 +533,105 @@ model_1_results = eval_model(model=model_1,
                              accuracy_fn=accuracy_fn) 
 
 print(model_0_results) 
-print(model_1_results)
+print(model_1_results) 
+
+# Create a convolutional neural network 
+class FashionMNISTV2(nn.Module):
+    """Model architecture that replicates the TinyVGG model from CNN explainer website"""
+    def __init__(self, input_shape: int, hidden_units: int, output_shape: int):
+        super().__init__() 
+
+        self.conv_block_1 = nn.Sequential(
+            nn.Conv2d(in_channels=input_shape, 
+                      out_channels=hidden_units, 
+                      kernel_size= (3, 3), 
+                      stride=1,
+                      padding=1), 
+            nn.ReLU(), 
+            nn.Conv2d(in_channels=hidden_units, 
+                      out_channels=hidden_units, 
+                      kernel_size=(3, 3), 
+                      stride=1,
+                      padding=1), 
+            nn.ReLU(), 
+            nn.MaxPool2d(kernel_size=(2, 2))
+        ) 
+
+        self.con_block_2 = nn.Sequential(
+            nn.Conv2d(in_channels=hidden_units, 
+                      out_channels=hidden_units, 
+                      kernel_size=(3, 3), 
+                      stride=1, 
+                      padding=1), 
+            nn.ReLU(), 
+            nn.Conv2d(in_channels=hidden_units, 
+                      out_channels=hidden_units, 
+                      kernel_size=(3, 3), 
+                      stride=1, 
+                      padding=1), 
+            nn.ReLU(), 
+            nn.MaxPool2d(kernel_size=2)
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(), 
+            nn.Linear(in_features= hidden_units * 7 * 7, # There's a trick to calculating this ..
+                      out_features=output_shape)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor: 
+        x = self.conv_block_1(x) 
+        #print(f"Output shape of conv_block_1: {x.shape}")
+        x = self.con_block_2(x) 
+        #print(f"Outoput shape of conv_block_2: {x.shape}") 
+        x = self.classifier(x) 
+        #print(f"Output shape of classifier: {x.shape}")
+        return x
+    
+torch.manual_seed(42) 
+model_2 = FashionMNISTV2(input_shape= 1, 
+                         hidden_units=10,
+                         output_shape=len(class_names)
+                         ).to(device) 
+
+# Set up an optimizer and loss function
+loss_fn = nn.CrossEntropyLoss() 
+optimizer = torch.optim.SGD(params=model_2.parameters(), lr=0.1) 
+
+
+# Training and testing model_2 using our training and testing functions
+
+torch.manual_seed(42) 
+torch.cuda.manual_seed(42) 
+
+start_time = timer() 
+
+# Train and test model 
+epochs = 3 
+for epoch in tqdm(range(epochs)): 
+    print(f"Epoch {epoch}...") 
+    train_step(model=model_2, 
+                data_loader=train_dataloader, 
+                loss_fn=loss_fn, 
+                optimizer=optimizer, 
+                accuracy_fn=accuracy_fn, 
+                device=device) 
+    test_step(model=model_2, 
+              data_loader=test_dataloader, 
+              loss_fn=loss_fn, 
+              accuracy_fn=accuracy_fn, 
+              device=device)
+end_time = timer() 
+
+print_train_time(start=start_time, end=end_time, device=device) 
+
+# Get model 
+model_2_results = eval_model(model=model_2, 
+                             data_loader=test_dataloader, 
+                             loss_fn=loss_fn, 
+                             accuracy_fn=accuracy_fn, 
+                             device=device) 
+print(model_2_results) 
+
+
+ 

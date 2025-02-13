@@ -351,4 +351,12 @@ for epoch in tqdm(range(epochs)):
               device=device)
 end_time = timer() 
 
-print_train_time(start=start_time, end=end_time, device=device)
+print_train_time(start=start_time, end=end_time, device=device) 
+
+# Get model 
+model_2_results = eval_model(model=model_2, 
+                             data_loader=test_dataloader, 
+                             loss_fn=loss_fn, 
+                             accuracy_fn=accuracy_fn, 
+                             device=device) 
+print(model_2_results)
