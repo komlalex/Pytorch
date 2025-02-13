@@ -320,7 +320,6 @@ def eval_model(model: torch.nn.Module,
 
     with torch.inference_mode(): 
         for x, y in tqdm(data_loader): 
-
             # Make predictions 
             y_pred = model(x) 
 
@@ -373,15 +372,165 @@ class FashionMNISTModelV1(nn.Module):
 
     
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
-        self.layer_stack(x) 
+        return self.layer_stack(x) 
 
 
 # Create an instance of model_1 
 torch.manual_seed(42)
 model_1 = FashionMNISTModelV1(
-    input_shape= 784, # Thisiis the output of the flatten layer after our 28 * 28 imgae goes in 
+    input_shape= 784, # This is the output of the flatten layer after our 28 * 28 imgae goes in 
     hidden_units= 10 ,
     output_shape= len(class_names)
 ).to(device)
 
-print(next(model_1.parameters()).device)
+loss_fn = nn.CrossEntropyLoss() 
+optimizer = torch.optim.SGD(params=model_1.parameters(), 
+                            lr=0.1)
+
+
+"""
+Functionizing training and testing loops 
+*training = train_step()
+*testing loop = tst_step()
+"""
+
+def train_step(model: nn.Module, 
+               data_loader: torch.utils.data.DataLoader,
+                loss_fn: torch.nn.Module, 
+                optimizer: torch.optim.Optimizer, 
+                accuracy_fn, 
+                device: torch.device = device): 
+    
+    """Performs a training with model trying to learn on data_loader"""
+    
+    train_loss, train_acc = 0, 0
+
+    # Put model in training mode
+    model.train() 
+
+    # Add a loop to loop through the training bacthes
+    for x, y in data_loader:
+        # Put data on target device
+        x, y = x.to(device), y.to(device)
+
+        # Forward pass 
+        y_pred = model(x)  
+
+        # Calculate the loss and acc (per batch) 
+        loss = loss_fn(y_pred, y) 
+        train_loss += loss # Accumulate the loss 
+
+        train_acc += accuracy_fn(y_true= y, y_pred=y_pred.argmax(dim=1))
+        # Optimizer zero grad 
+        optimizer.zero_grad() 
+
+        # Loss backward 
+        loss.backward() 
+
+        # Optimizer step 
+        optimizer.step() 
+
+    # Divide total train loss and acc by length of dataload 
+    train_loss /= len(data_loader) 
+    train_acc /= len(data_loader) 
+    print(f"Train loss: {train_loss: .5f} | Train acc: {train_acc: .2f}%")
+
+def test_step(model: nn.Module, 
+              data_loader: torch.utils.data.DataLoader, 
+              loss_fn: nn.Module, 
+              accuracy_fn, 
+              device: torch.device = device): 
+    """Performs a testing loop step on model going over data_loader"""
+    test_loss, test_acc = 0, 0
+
+    model.eval() 
+    with torch.inference_mode(): 
+        for x, y in data_loader: 
+            x, y = x.to(device), y.to(device) 
+            
+            test_pred = model(x) 
+
+            test_loss += loss_fn(test_pred, y) 
+            test_acc += accuracy_fn(y, test_pred.argmax(dim=1))  
+        
+        test_loss /= len(data_loader) 
+        test_acc /= len(data_loader)
+
+        print(f"Test loss: {test_loss: .5f} | Test acc: {test_acc: .2f}%")
+
+def eval_model(model: torch.nn.Module, 
+                data_loader: torch.utils.data.DataLoader, 
+                loss_fn: torch.nn.Module, 
+                accuracy_fn, 
+                device: torch.device = device): 
+    """Returns a dictionary containing the results of model prediction on data loader"""
+    loss, acc = 0, 0 
+    model.eval() 
+
+    with torch.inference_mode(): 
+        for x, y in tqdm(data_loader): 
+            x, y = x.to(device), y.to(device)
+            # Make predictions 
+            y_pred = model(x) 
+
+            # Accumulate loss and acc per batch 
+            loss += loss_fn(y_pred, y) 
+            acc += accuracy_fn(y, y_pred.argmax(dim=1))
+        # Scale the loss and acc to find the average per batch 
+
+        loss /= len(data_loader) 
+        acc /= len(data_loader) 
+    
+    return {"model_name": model.__class__.__name__, 
+            "model_loss": loss.item(), 
+            "model_acc": acc}
+# Train model_1 
+torch.manual_seed(42)
+
+# Set start time
+start_time_on_gpu = timer() 
+
+# Set epochs
+epochs = 3
+
+# Create an optimizing loop using train_loss() and test_loss()
+for epoch in tqdm(range(epochs)):
+    print(f"Epoch: {epoch}\n------") 
+
+    # Train step
+    train_step(model=model_1, 
+               data_loader=train_dataloader, 
+               loss_fn=loss_fn, 
+               optimizer=optimizer, 
+               accuracy_fn=accuracy_fn, 
+            )  
+    # Test Step 
+    test_step(model=model_1, 
+              data_loader=test_dataloader, 
+              loss_fn=loss_fn,
+              accuracy_fn=accuracy_fn, 
+              device=device) 
+    
+end_time_on_gpu = timer() 
+print_train_time(start=start_time_on_gpu, end=end_time_on_gpu, device=device)
+
+"""
+Somtimes, depending on your data/hardware you might find your model trains 
+faster on CPU than GPU. 
+
+Why is this? 
+1. It could be that the overhead for copying data/'model to and from the gpu outweighs the compute 
+benefit offered by the GPU. 
+2. The hardware you're using has a better CPU in terms of compute capability than 
+the CPU.
+"""
+
+# Get model_1 results dictionary 
+
+model_1_results = eval_model(model=model_1, 
+                             data_loader=test_dataloader, 
+                             loss_fn=loss_fn, 
+                             accuracy_fn=accuracy_fn) 
+
+print(model_0_results) 
+print(model_1_results)
