@@ -304,7 +304,7 @@ for epoch in tqdm(range(epochs)):
 
 
 end_time = timer()  
-print_train_time(start_time, end_time, device=str(next(model_0.parameters()).device))
+total_train_time_model_0 = print_train_time(start_time, end_time, device=str(next(model_0.parameters()).device))
 
 
 # Make predicitions and get Model 0 results 
@@ -512,7 +512,7 @@ for epoch in tqdm(range(epochs)):
               device=device) 
     
 end_time_on_gpu = timer() 
-print_train_time(start=start_time_on_gpu, end=end_time_on_gpu, device=device)
+total_train_time_model_1 = print_train_time(start=start_time_on_gpu, end=end_time_on_gpu, device=device)
 
 """
 Somtimes, depending on your data/hardware you might find your model trains 
@@ -536,7 +536,7 @@ print(model_0_results)
 print(model_1_results) 
 
 # Create a convolutional neural network 
-class FashionMNISTV2(nn.Module):
+class FashionMNISTModelV2(nn.Module):
     """Model architecture that replicates the TinyVGG model from CNN explainer website"""
     def __init__(self, input_shape: int, hidden_units: int, output_shape: int):
         super().__init__() 
@@ -589,7 +589,7 @@ class FashionMNISTV2(nn.Module):
         return x
     
 torch.manual_seed(42) 
-model_2 = FashionMNISTV2(input_shape= 1, 
+model_2 = FashionMNISTModelV2(input_shape= 1, 
                          hidden_units=10,
                          output_shape=len(class_names)
                          ).to(device) 
@@ -623,7 +623,7 @@ for epoch in tqdm(range(epochs)):
               device=device)
 end_time = timer() 
 
-print_train_time(start=start_time, end=end_time, device=device) 
+total_train_time_model_2  = print_train_time(start=start_time, end=end_time, device=device) 
 
 # Get model 
 model_2_results = eval_model(model=model_2, 
@@ -633,5 +633,20 @@ model_2_results = eval_model(model=model_2,
                              device=device) 
 print(model_2_results) 
 
+# Compare model results and training time 
+import pandas as pd 
+compare_results = pd.DataFrame([model_0_results, 
+                                model_1_results, 
+                                model_2_results]) 
+compare_results["training_time"] = [total_train_time_model_0, 
+                                    total_train_time_model_1, 
+                                    total_train_time_model_2]
+print(compare_results)
 
+
+# Visualize our model 
+compare_results.set_index("model_name")["model_acc"].plot(kind="barh") 
+plt.xlabel("accuracy (%)") 
+plt.ylabel("model") 
+plt.show()
  
