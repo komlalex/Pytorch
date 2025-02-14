@@ -359,4 +359,85 @@ model_2_results = eval_model(model=model_2,
                              loss_fn=loss_fn, 
                              accuracy_fn=accuracy_fn, 
                              device=device) 
-print(model_2_results)
+print(model_2_results)  
+
+# Make and evalaute random predictions with the best model 
+
+def make_predictions(model: nn.Module, 
+                      data: list, 
+                      device: torch.device= device):
+    pred_probs = [] 
+    model.to(device)
+    model.eval() 
+
+    with torch.inference_mode(): 
+
+        for sample in data:
+            # Prepare the sample (add a batch dimension and pass to target device) 
+            sample = torch.unsqueeze(sample, dim=0).to(device) 
+
+            # Forward pass (model outputs raw logits) 
+            pred_logits = model(sample)  
+
+            # Get prediction probability (logits -> prodection probability) 
+
+            pred_prob = torch.softmax(pred_logits.squeeze(), dim=0)
+
+            # Get pred_prob off GPU for further calculations 
+            pred_probs.append(pred_prob.cpu()) 
+        
+        #   Stack the pred_probs to turn list into a tensor
+        return torch.stack(pred_probs) 
+    
+import random 
+#random.seed(42)
+test_samples = [] 
+test_labels = [] 
+
+for sample, label in random.sample(list(test_data), k=9): 
+    test_samples.append(sample)
+    test_labels.append(label) 
+
+# View the first sample shape 
+plt.imshow(test_samples[0].squeeze(), cmap="gray") 
+plt.title(class_names[test_labels[0]]) 
+#plt.show()  
+
+
+pred_probs = make_predictions(model=model_2, 
+                              data = test_samples, 
+                              device=device)
+
+# View first two prediction probabilities
+print(pred_probs[:2]) 
+
+# Convert prediction probabilities to labels
+pred_classes = pred_probs.argmax(dim=1) 
+
+
+# Plot predictions 
+
+plt.figure(figsize=(9, 9)) 
+nrows = 3 
+ncols = 3 
+
+for i, sample in enumerate(test_samples):
+    plt.subplot(nrows, ncols, i + 1)  
+
+    # Plot the target image 
+    plt.imshow(sample.squeeze(), cmap="gray") 
+
+    # Find the prediction (in text form, e.g. "Sandals") 
+    pred_label = class_names[pred_classes[i]] 
+
+    # Get the truth label (in text form)  
+    truth_label = class_names[test_labels[i]] 
+
+    # Create a title for plot 
+    title_text = f"Pred: {pred_label} | Truth: {truth_label}" 
+
+    # Check for equality between pred and truth and change color of title text
+    colour = "g" if pred_label == truth_label else "r" 
+    plt.title(title_text, fontsize=10, c=colour) 
+    plt.axis(False)
+plt.show()
