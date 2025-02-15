@@ -390,7 +390,7 @@ def make_predictions(model: nn.Module,
         return torch.stack(pred_probs) 
     
 import random 
-#random.seed(42)
+random.seed(42)
 test_samples = [] 
 test_labels = [] 
 
@@ -440,4 +440,54 @@ for i, sample in enumerate(test_samples):
     colour = "g" if pred_label == truth_label else "r" 
     plt.title(title_text, fontsize=10, c=colour) 
     plt.axis(False)
+#plt.show()  
+
+"""
+Making a confusion matrix for further predictions 
+
+A confusion matrix is a fantastic way of evaluating your classification matrix visually
+
+1. Make predictions with our trained model 
+2. Make a confusion matrix 'torchmetrics.ConfusionMatrix`
+3. Plot the confusion matrix using `mlxtend.plot_confusion_matrix()`
+"""
+from tqdm.auto import tqdm 
+from torchmetrics import ConfusionMatrix
+from mlxtend.plotting import plot_confusion_matrix
+
+# Make predictions with trained model 
+y_preds = [] 
+
+model_2.eval() 
+
+with torch.inference_mode(): 
+    for x, y in tqdm(test_dataloader, desc="Making predictions..."): 
+        x, y = x.to(device), y.to(device) 
+
+        # Forward pass 
+        y_logits = model_2(x) 
+
+        # Turn predictions from logits -> prediction probabilities -> labels 
+        y_pred = torch.softmax(y_logits.squeeze(), dim=0).argmax(dim=1) 
+
+        # Put predictions on cpu for evaluation 
+        y_preds.append(y_pred.cpu()) 
+
+#  Concatenate list of predictions into a single tensor 
+y_preds_tensor = torch.cat(y_preds)  
+
+# Setup confusion instance and compare predictions to target 
+confmat = ConfusionMatrix(num_classes=len(class_names), task="multiclass") 
+
+confmat_tensor = confmat(preds=y_preds_tensor, 
+                         target = test_data.targets) 
+
+print(confmat_tensor) 
+
+# Plot the confusion matrix 
+fig, ax = plot_confusion_matrix(
+    conf_mat=confmat_tensor.numpy(),  # Matplotlib likes working with numpy
+    class_names=class_names, 
+    figsize=(10, 7)
+)
 plt.show()
