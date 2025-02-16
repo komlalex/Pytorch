@@ -477,7 +477,8 @@ with torch.inference_mode():
 y_preds_tensor = torch.cat(y_preds)  
 
 # Setup confusion instance and compare predictions to target 
-confmat = ConfusionMatrix(num_classes=len(class_names), task="multiclass") 
+confmat = ConfusionMatrix(num_classes=len(class_names), 
+                          task="multiclass") 
 
 confmat_tensor = confmat(preds=y_preds_tensor, 
                          target = test_data.targets) 
@@ -490,4 +491,19 @@ fig, ax = plot_confusion_matrix(
     class_names=class_names, 
     figsize=(10, 7)
 )
-plt.show()
+plt.show() 
+
+# Saving and loading the trained model 
+from pathlib import Path
+MODEL_PATH = Path("models" )
+MODEL_PATH.mkdir(parents=True, 
+                 exist_ok=True) 
+
+# Create model save 
+MODEL_NAME = "cnn_model_2.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME   
+
+# Model the model state dict 
+torch.save(obj=model_2.state_dict(), 
+           f=MODEL_SAVE_PATH) 
+
