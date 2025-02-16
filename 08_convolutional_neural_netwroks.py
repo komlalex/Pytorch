@@ -505,5 +505,28 @@ MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
 
 # Model the model state dict 
 torch.save(obj=model_2.state_dict(), 
-           f=MODEL_SAVE_PATH) 
+           f=MODEL_SAVE_PATH)  
+# Loading the model state dict 
+torch.manual_seed(42)
+loaded_model_2 = FashionMNISTV2(input_shape=1,
+                         hidden_units=10, 
+                         output_shape=len(class_names)) 
 
+loaded_model_2.load_state_dict(torch.load(f=MODEL_SAVE_PATH))
+
+# Send loaded model to target device 
+loaded_model_2.to(device) 
+
+# Evalaute loaded model 
+torch.manual_seed(42)
+torch.cuda.manual_seed(42) 
+
+loaded_model_2_results = eval_model(
+    model=loaded_model_2, 
+    data_loader=test_dataloader, 
+    loss_fn=loss_fn, 
+    accuracy_fn=accuracy_fn
+)
+
+print(model_2_results) 
+print(loaded_model_2_results)
