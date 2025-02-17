@@ -338,7 +338,74 @@ train_data_custom = ImageFolderCustom(targ_dir=train_dir,
 test_data_custom =  ImageFolderCustom(targ_dir=test_dir, 
                                       transforms=test_transforms) 
 
-print(train_data_custom.transform)
+# Check for equality betwen ImageFolder Dataset and ImageFolderCustom Dataset 
+print(train_data_custom.classes == train_data.classes)
+print(train_data_custom.class_to_idx == train_data.class_to_idx) 
+
+"""
+Create a function to display random images 
+
+1. Take in a Dataset and a number of parameters such as classnames and how 
+many images to visualize. 
+2. To prevent display getting out of hand, let's cap the number of images to see at 10 
+3. Set a random seed for reproducibility
+4. Get a list the random sample indices from the target dataset
+5. Setup a matplotlib plot
+6. Loop through the random sample images and plot them with matplotlib
+7. Make sure the dimensions of our images line up with matplotlib (HWC)
+""" 
+
+# Create a function to take in a dataset 
+def display_random_images(dataset: Dataset, 
+                          classes: List[str], 
+                          n: int = 10, 
+                          display_shape: bool = True, 
+                          seed: int = None): 
+    # Adjust display if n is too high 
+    if n > 10: 
+        n = 10 
+        display_shape = False 
+        print("For display purposes, n shouldn't be larger than 10, setting it 10 and removing shape display")
+
+    if seed: 
+        random.seed(seed) 
+
+    # Get random samples 
+    random_samples_idx = random.sample(range(len(dataset)), k=n) 
+
+    # Setup plot 
+    plt.figure(figsize=(16, 8))
+
+    # Loop through indices and plot them with matplotlib 
+    for i, targ_sample in enumerate(random_samples_idx): 
+        targ_image, targ_label = dataset[targ_sample]   
+
+        # Adjust tensor dimensions for plotting 
+        targ_image_adjust = targ_image.permute(1, 2, 0)  
+
+        # Plot adjusted samples 
+        plt.subplot(1, n, i + 1) 
+        plt.imshow(targ_image_adjust) 
+        plt.axis(False)
+        if classes: 
+            title = f"Class {classes[targ_label]}"
+            if display_shape: 
+                title = title + f"\nShape: {targ_image_adjust.shape}"
+        plt.title(title)
+
+# Display random images from the ImageFolder ceated Dataset
+display_random_images(dataset=train_data, 
+                      n = 5, 
+                      classes=class_names, 
+                      seed=42) 
+
+# Display random images from the ImageFolderCustom creared Dataset
+display_random_images(dataset=train_data_custom, 
+                      n = 20,
+                      classes=class_names, 
+                      seed=42)
+plt.show()
+
     
 
 
