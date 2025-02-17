@@ -404,7 +404,26 @@ display_random_images(dataset=train_data_custom,
                       n = 20,
                       classes=class_names, 
                       seed=42)
-plt.show()
+#plt.show() 
+
+# Turn custom loaded images into DataLoader
+BATCH_SIZE = 5
+train_dataloader_custom = DataLoader(
+    dataset=train_data_custom, 
+    batch_size=BATCH_SIZE, 
+    drop_last=False, 
+    shuffle=True
+)
+
+test_dataloader_custom = DataLoader(
+    dataset=test_data_custom, 
+    batch_size = BATCH_SIZE, 
+    shuffle=False 
+) 
+
+# Get image and label from custom dataloader
+img_custom, label_custom  = next(iter(train_dataloader_custom)) 
+print(img_custom.shape, label_custom.shape)
 
     
 
