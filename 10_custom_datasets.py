@@ -123,10 +123,7 @@ def plot_transformed_images(image_paths: list, transforms, n=3, seed = None):
             fig.suptitle(f"Class {image_path.parent.stem}", fontsize=16) 
 
 
-plot_transformed_images(image_paths=image_path_list ,
-                        transforms=data_transforms, 
-                        n=3, 
-                        seed=None) 
+#plot_transformed_images(image_paths=image_path_list ,transforms=data_transforms, n=3, seed=None) 
 
 #lt.show() 
 
@@ -152,7 +149,55 @@ test_data = datasets.ImageFolder(
 class_names = train_data.classes 
 # Get class names as dict 
 class_dict = train_data.class_to_idx
-print(class_dict)
+
+# Check the lengths of our datasets 
+#print(len(train_data), len(test_data)) 
+
+
+# Index on the train_data dataset to get a single image and label 
+img, label = train_data[0] 
+#print(f"Image tensor:\n {img}")
+#print(f"Image shape: {img.shape}")
+#print(f"Image datatype: {img.dtype}")
+#print(f"Image label: {label}")
+#print(f"Label datatype: {type(label)}") 
+
+# Rearrange the order dimensions 
+img_permute = img.permute(1, 2, 0)
+
+# Print out the different shapes 
+print(f"Original shape: {img.shape} -> [color_channels, height, width]")
+print(f"Image permute: {img_permute.shape} -> [height, width, color_channels]")
+
+# Plot the image
+plt.figure(figsize=(10, 7))
+plt.imshow(img_permute)
+plt.title(class_names[label], fontsize=16) 
+plt.axis(False)
+#plt.show()
+
+"""
+Turn loaded images into `DataLoader`
+
+A DataLoader is going to help us turn our Dataset into iterables and we can customize
+the batch_size images at a time 
+"""
+BATCH_SIZE = 1
+train_dataloader = DataLoader(
+    dataset=train_data, 
+    batch_size=BATCH_SIZE, 
+    shuffle=True,
+    num_workers= 1
+)
+
+test_dataloader = DataLoader(
+    dataset=test_data, 
+    batch_size=BATCH_SIZE, 
+    shuffle=False, 
+    num_workers= 1
+)
+
+print(train_dataloader, test_dataloader)
 
 
 
