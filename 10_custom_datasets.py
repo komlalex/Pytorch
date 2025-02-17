@@ -224,11 +224,37 @@ or performance issues.
 All custom datasets often subclass Dataset
 """
 # Instance of torchvision.datasets.ImageFolder() 
-print(train_data.classes, train_data.class_to_idx)
+#print(train_data.classes, train_data.class_to_idx)  
 
+"""
+Creating a helper function to get class names: 
+1. Get the classnames using os.scandir() to traverse a target directory (ideally the directory is in standard image classification format)
+2. Raise an eror if the class names aren't found (if this happens, there might be something wrong with the directory structure)
+3. Turn the class names into a dict and a list and return them 
 
+"""
 
+# Setup path for target directory 
+target_directory = train_dir
+#print(f"Target dir: {target_directory}") 
 
+# Get the class classnames from the target directory 
+
+def find_classes(directory: str) -> Tuple[ List[str], Dict[str, int]]:
+    """Find the class folder names in the target directory"""
+    # 1. Get the class names by scanning the target directory 
+    classes = sorted([entry.name for entry in os.scandir(directory) if entry.is_dir()]) 
+
+    # Raise an error if classnames could not be found
+    if not classes: 
+        raise FileNotFoundError(f"Couldn't find any classses in {directory} ... please check file structure")
+    
+    # Create a dictionary of index labels (computers prefer numbers rather than strings as labels)
+    class_to_idx = {classname: i for i, classname in enumerate(classes)}
+    return classes, class_to_idx
+
+class_names, class_to_idx = find_classes(target_directory)
+print(class_names, class_to_idx)
 
 
 
