@@ -91,4 +91,59 @@ data_transforms = transforms.Compose([
     transforms.ToTensor()
 ])
 
-print(data_transforms(img).dtype)
+#print(data_transforms(img).shape)  
+
+"""Transforming data with `torchvision.transforms` 
+
+Transforms help you get your images ready to be used with a model/perform data augmentation
+""" 
+
+def plot_transformed_images(image_paths: list, transforms, n=3, seed = None): 
+    """
+    Selects random images from a path of images and loads/transforms them, and plots 
+    the original vs the transformed version.
+    """
+    if seed: 
+        random.seed(seed)
+    random_image_paths = random.sample(image_paths, k=n) 
+
+    for image_path in random_image_paths: 
+        with Image.open(image_path) as f: 
+            fig, ax = plt.subplots(nrows=1, ncols=2)
+            ax[0].imshow(f) 
+            ax[0].set_title(f"Original\nSize: {f.size}")
+            ax[0].axis(False) 
+
+            # Transform and plot target 
+            transformed_image = transforms(f).permute(1, 2, 0) # note we will need to change the shape (C, W, W) -> (W, C, H)
+            ax[1].imshow(transformed_image)
+            ax[1].set_title(f"Transformed\nShape: {transformed_image.shape}")
+            ax[1].axis("off")  
+
+            fig.suptitle(f"Class {image_path.parent.stem}", fontsize=16) 
+
+
+plot_transformed_images(image_paths=image_path_list ,
+                        transforms=data_transforms, 
+                        n=3, 
+                        seed=None) 
+
+plt.show() 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
