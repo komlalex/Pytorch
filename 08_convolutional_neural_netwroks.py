@@ -491,7 +491,7 @@ fig, ax = plot_confusion_matrix(
     class_names=class_names, 
     figsize=(10, 7)
 )
-plt.show() 
+#plt.show() 
 
 # Saving and loading the trained model 
 from pathlib import Path
@@ -529,4 +529,8 @@ loaded_model_2_results = eval_model(
 )
 
 print(model_2_results) 
-print(loaded_model_2_results)
+print(loaded_model_2_results) 
+
+# Check if model results are close to each other 
+print(torch.isclose(torch.tensor(model_2_results["model_loss"]), 
+                    torch.tensor(loaded_model_2_results["model_loss"])))
