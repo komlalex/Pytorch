@@ -1,6 +1,6 @@
 import torch 
 from torch import nn 
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import random 
 from PIL import Image
+from typing import Dict, Tuple, List
 # Setup device agmostic code 
 device = "cuda" if torch.cuda.is_available() else "cpu"  
 
@@ -184,21 +185,46 @@ the batch_size images at a time
 """
 BATCH_SIZE = 1
 train_dataloader = DataLoader(
-    dataset=train_data, 
+    dataset=train_data,  # os.cpu_count()
     batch_size=BATCH_SIZE, 
     shuffle=True,
-    num_workers= 1
+    #num_workers= 1
 )
 
 test_dataloader = DataLoader(
     dataset=test_data, 
     batch_size=BATCH_SIZE, 
     shuffle=False, 
-    num_workers= 1
+    #num_workers= 1
 )
 
-print(train_dataloader, test_dataloader)
 
+img, label = next(iter(train_dataloader)) 
+
+# Batch size will now be 1, you can change the batch size if you like 
+#print(f"Image shape: {img.shape}")
+#print(f"Label shape {label.shape}") 
+
+
+"""
+Option 2: Loading Image Data with a custom `Dataset`
+1. Want to be able to load images from file
+2. Want to be able to get class names from the Dataset
+3. Want to be able to get classes as a dictionary from the Dataset 
+
+Pros: 
+1. Can create a `Dataset` out of almost anything
+2. Not limited to PyTorch pre-built Dataset functions 
+
+Cons: 
+1. Even though you could create Dataset out of almost anything, it doesn't mean it will work...
+2. Using a custom `Dataset` often results in us writing more code, which could be prone to erros 
+or performance issues.  
+
+All custom datasets often subclass Dataset
+"""
+# Instance of torchvision.datasets.ImageFolder() 
+print(train_data.classes, train_data.class_to_idx)
 
 
 
