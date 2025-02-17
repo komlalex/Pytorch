@@ -1,5 +1,7 @@
 import torch 
 from torch import nn 
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import numpy as np
 import os 
@@ -20,7 +22,7 @@ def walk_through_dir(dir_path):
     for dirpath, dirnames, filenames in os.walk(dir_path): 
         print(f"There are {len(dirnames)} directories and {len(filenames)} images in {dirpath}. ")
 
-walk_through_dir(image_path) 
+#walk_through_dir(image_path) 
 
 # Setup train and testing paths 
 train_dir = image_path / "train" 
@@ -66,6 +68,27 @@ plt.figure(figsize=(10, 7))
 plt.imshow(img_as_array)
 plt.title(f"Image class: {image_class} | Image shape: {img_as_array.shape}")
 plt.axis(False)
-plt.show()
+#plt.show()
 
-print(img_as_array)
+
+
+"""
+TRANSFORMING DATA
+
+Before we can use our image data with PyTorch: 
+1. Turn your data into tensors (in our case numerical representation of our images)
+2. Turn it into a `torch.util.Dataset` and subsquently `torch.utils.DataLoader`, we'll call 
+these Dataset and DataLoader
+"""
+
+# Transforming data with torchvision.tranforms 
+data_transforms = transforms.Compose([
+    # Resize images to 64x64
+    transforms.Resize(size=(64, 64)), 
+    # Flip the images randomly on the horizontal
+    transforms.RandomHorizontalFlip(p=0.5),
+    # Turn the image into a tensor
+    transforms.ToTensor()
+])
+
+print(data_transforms(img).dtype)
