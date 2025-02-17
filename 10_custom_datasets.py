@@ -2,6 +2,7 @@ import torch
 from torch import nn 
 from torch.utils.data import Dataset, DataLoader
 from torchvision import datasets, transforms
+from torchinfo import summary
 import matplotlib.pyplot as plt
 import numpy as np
 import os 
@@ -407,7 +408,7 @@ display_random_images(dataset=train_data_custom,
 #plt.show() 
 
 # Turn custom loaded images into DataLoader
-BATCH_SIZE = 5
+BATCH_SIZE = 1
 train_dataloader_custom = DataLoader(
     dataset=train_data_custom, 
     batch_size=BATCH_SIZE, 
@@ -423,7 +424,161 @@ test_dataloader_custom = DataLoader(
 
 # Get image and label from custom dataloader
 img_custom, label_custom  = next(iter(train_dataloader_custom)) 
-print(img_custom.shape, label_custom.shape)
+#print(img_custom.shape, label_custom.shape)
+
+"""
+Other forms of transforms (Data Augmentation)
+Data augmentation is the process of adding diversity to your data. 
+
+In the case of image data, this might mean applying various image transformations to the training images
+
+This practice hopefully results in a model that's more generalizeable to unseen data. 
+Let's take a look at one particular type of data augmentation used to train PyTorch vision
+models to state of the art levels ...
+"""
+
+# Let's look at TrivialAugment 
+
+train_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.TrivialAugmentWide(num_magnitude_bins=25), 
+    transforms.ToTensor()
+])
+
+test_transform = transforms.Compose([
+    transforms.Resize((224, 224)), 
+    transforms.ToTensor()
+]) 
+
+# Get all the iamge paths 
+image_path_list = list(image_path.glob("*/*/*.jpg"))
+
+# Plot random transformed images 
+plot_transformed_images(
+    image_paths=image_path_list, 
+    transforms=train_transform, 
+    n = 3, 
+    seed = None
+)
+
+"""
+Model 0: TinyVGG without data augmentation
+
+Let's replicate the TinyVGG from the CNN explainer website 
+"""
+
+# Let's create a simple tranaform 
+simple_transform = transforms.Compose([
+    transforms.Resize((64, 64)),
+    transforms.ToTensor()
+])
+
+train_data_simple = datasets.ImageFolder(
+    root=train_dir, 
+    transform=simple_transform,
+    target_transform=None
+)
+
+test_data_simple = datasets.ImageFolder(
+    root= test_dir, 
+    transform=simple_transform, 
+    target_transform=None
+)
+
+# Setup batch size and number of workers 
+BATCH_SIZE = 32
+NUM_WORKERS = os.cpu_count()
+
+train_dataloader_simple = DataLoader(
+    dataset=train_data, 
+    batch_size=BATCH_SIZE, 
+    shuffle=True
+)
+
+test_dataloader_simple = DataLoader(
+    dataset=test_data, 
+    batch_size=BATCH_SIZE, 
+    shuffle=False
+)  
+
+# Create TinyVGG model class 
+
+class TinyVGG(nn.Module): 
+    def __init__(self, input_shape: int, 
+                 hidden_units: int, 
+                 output_shape: int):
+        super().__init__()
+        self.conv_block_1 = nn.Sequential(
+            nn.Conv2d(in_channels=input_shape, 
+                      out_channels=hidden_units, 
+                      kernel_size=3,
+                      stride=1, 
+                      ),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=hidden_units, 
+                      out_channels=hidden_units, 
+                      kernel_size=3, 
+                      stride=1, 
+                      ),
+            nn.ReLU(), 
+            nn.MaxPool2d(kernel_size=2, 
+                         stride=2) # default stride value is the same as the kernel_size
+        ) 
+
+        self.conv_block_2 = nn.Sequential(
+            nn.Conv2d(in_channels=hidden_units, 
+                      out_channels=hidden_units, 
+                      kernel_size=3,
+                      stride=1, 
+                      ),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=hidden_units, 
+                      out_channels=hidden_units, 
+                      kernel_size=3, 
+                      stride=1, 
+                      ),
+            nn.ReLU(), 
+            nn.MaxPool2d(kernel_size=2, 
+                         stride=2) # default stride value is the same as the kernel_size
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(), 
+            nn.Linear(in_features=hidden_units * 13 * 13,
+                      out_features=output_shape, 
+                      )
+        )
+
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor: 
+        x = self.conv_block_1(x) 
+        print(x.shape) 
+        x = self.conv_block_2(x) 
+        print(x.shape)
+        x = self.classifier(x) 
+        print(x.shape)
+        #return self.classifier(self.conv_block_2(self.conv_block_1(x)))
+        return x 
+    
+torch.manual_seed(42) 
+
+model_0 = TinyVGG(input_shape=3, 
+                  hidden_units=10, 
+                  output_shape=len(class_names)
+                  ).to(device) 
+
+
+# Try a forward pass on a single image 
+image_batch, label_batch = next(iter(train_dataloader_simple)) 
+
+print(model_0(image_batch.to(device)))
+
+print(summary(model_0, input_size=(32, 3, 64, 64)))
+
+
+
+
+
 
     
 
