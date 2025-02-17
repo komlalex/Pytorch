@@ -128,8 +128,31 @@ plot_transformed_images(image_paths=image_path_list ,
                         n=3, 
                         seed=None) 
 
-plt.show() 
+#lt.show() 
 
+"""
+Option 1: Loading image data using ImageFolder
+
+We can load image classification data using `torchvision.datasets.ImageFolder`
+"""
+
+# Use ImageFolder to create dataset
+train_data = datasets.ImageFolder(
+    root=train_dir,
+    transform=data_transforms, # Transform for data
+    target_transform=None, # target transform
+)
+
+test_data = datasets.ImageFolder(
+    root = test_dir, 
+    transform=data_transforms, 
+)
+
+# Get class names as a list 
+class_names = train_data.classes 
+# Get class names as dict 
+class_dict = train_data.class_to_idx
+print(class_dict)
 
 
 
