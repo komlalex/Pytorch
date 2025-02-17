@@ -256,7 +256,90 @@ def find_classes(directory: str) -> Tuple[ List[str], Dict[str, int]]:
 class_names, class_to_idx = find_classes(target_directory)
 print(class_names, class_to_idx)
 
+"""
+Create a  custom Dataset to replicate ImageFolder 
 
+To create our own custom dataset, we want to: 
+1. Subclass torch.utils.data.Dataset
+2. Init our subclass with a target directory (the directory we'd like to get data from) as well as 
+transform if we'd like to transform our data. 
+3. Create several attributes: 
+* paths - paths of our images
+* transform - transform we'd like to use 
+* classes - a list of target classes
+* class_to_idx - a dict of the target classes mapped integer labels 
+4. Create a function to `load_images()`, this function will open an image 
+5. Overwrite the `__len__()` method to return the length of our dataset 
+6. Overwrite `__getitem__()` method to return a give sample when passed an index
+""" 
+
+# Write a custom dataset class 
+from torch.utils.data import Dataset 
+
+# Subclass torch.utils.data.Dataset 
+class ImageFolderCustom(Dataset): 
+    # Initialize our custom dataset 
+    def __init__(self,
+                  targ_dir: str,
+                  transforms=None):
+        super().__init__()
+    
+        # Create class attibutes 
+        # Get all of the image paths 
+        self.paths = list(Path(targ_dir).glob("*/*.jpg")) 
+
+        # Setup transforms 
+        self.transform = transforms
+
+        # Create classes and class to idx 
+        self.classes, self.class_to_idx = find_classes(targ_dir) 
+
+    # Create a function to load images 
+    def load_image(self, index: int) -> Image.Image: 
+        "Opens an image via a path and opens it"
+        image_path = self.paths[index]
+        return Image.open(image_path) 
+    
+    # Overwrite __len__() method 
+    def __len__(self): 
+        """Returns the total number of samples."""
+        return len(self.paths) 
+    
+    # Overwrite __getitem__()
+    def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
+        """Returns one sample of data, data and label (x, y)"""
+        img  = self.load_image(index)
+        class_name = self.paths[index].parent.name # Expects path in format: data_folder/class_name/image.jpg
+        class_idx = self.class_to_idx[class_name]
+
+        # Transform if necessary 
+        if self.transform: 
+            return self.transform(img), class_idx # Return data, label (x, y) 
+        
+        else: 
+            return img, class_idx # return untransformed image and label 
+
+# Create a transform 
+train_transforms = transforms.Compose([
+    transforms.Resize((64, 64)),
+    transforms.RandomHorizontalFlip(p=0.5), 
+    transforms.ToTensor()
+])
+
+test_transforms = transforms.Compose([
+    transforms.Resize((64, 64)), 
+    transforms.ToTensor()
+])
+
+# Test out ImageFolderCustom 
+train_data_custom = ImageFolderCustom(targ_dir=train_dir, 
+                                      transforms=train_transforms) 
+
+test_data_custom =  ImageFolderCustom(targ_dir=test_dir, 
+                                      transforms=test_transforms) 
+
+print(train_data_custom.transform)
+    
 
 
 
