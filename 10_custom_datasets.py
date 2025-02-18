@@ -1,6 +1,7 @@
 import torch 
 from torch import nn 
 from torch.utils.data import Dataset, DataLoader
+import torch.utils.data.dataloader
 from torchvision import datasets, transforms
 from torchinfo import summary
 import matplotlib.pyplot as plt
@@ -10,6 +11,10 @@ from pathlib import Path
 import random 
 from PIL import Image
 from typing import Dict, Tuple, List
+from helper_functions import accuracy_fn 
+
+from tqdm.auto import tqdm 
+from timeit import default_timer as timer
 # Setup device agmostic code 
 device = "cuda" if torch.cuda.is_available() else "cpu"  
 
@@ -486,7 +491,7 @@ test_data_simple = datasets.ImageFolder(
 )
 
 # Setup batch size and number of workers 
-BATCH_SIZE = 32
+BATCH_SIZE = 5
 NUM_WORKERS = os.cpu_count()
 
 train_dataloader_simple = DataLoader(
@@ -552,15 +557,14 @@ class TinyVGG(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
         x = self.conv_block_1(x) 
-        print(x.shape) 
+        #print(x.shape) 
         x = self.conv_block_2(x) 
-        print(x.shape)
+        #print(x.shape)
         x = self.classifier(x) 
-        print(x.shape)
+        #print(x.shape)
         #return self.classifier(self.conv_block_2(self.conv_block_1(x)))
         return x 
-    
-torch.manual_seed(42) 
+
 
 model_0 = TinyVGG(input_shape=3, 
                   hidden_units=10, 
@@ -571,14 +575,142 @@ model_0 = TinyVGG(input_shape=3,
 # Try a forward pass on a single image 
 image_batch, label_batch = next(iter(train_dataloader_simple)) 
 
-print(model_0(image_batch.to(device)))
+#print(model_0(image_batch.to(device)))
 
-print(summary(model_0, input_size=(32, 3, 64, 64)))
+#print(summary(model_0, input_size=(32, 3, 64, 64)))
+
+"""
+Create train and test loops functions 
+
+1. train_step() - takes in a model and dataloader and trains the model on the dataloader.
+2. test_step() - takes in a model and dataloader and evalautes the model on the dataloader
+"""
+
+def train_step(model: nn.Module, 
+               dataloader: torch.utils.data.DataLoader, 
+               loss_fn: nn.Module, 
+               optimizer: torch.optim.Optimizer,
+               device: torch.device = device): 
+    model.train() 
+    train_loss, train_acc = 0, 0
+    for batch, (x, y) in enumerate(dataloader):
+        x, y = x.to(device), y.to(device) 
+
+        y_pred = model(x)
+        
+        loss = loss_fn(y_pred, y) 
+        train_loss += loss.item()
+
+        y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
+        train_acc += ( (y_pred_class == y).sum().item() / len(y_pred) ) * 100
+
+        optimizer.zero_grad() 
+
+        loss.backward() 
+
+        optimizer.step()  
+
+    train_loss /= len(dataloader) 
+    train_acc /= len(dataloader)
+    return train_loss, train_acc
+
+
+def test_step(model: nn.Module, 
+              loss_fn: nn.Module, 
+              dataloader: torch.utils.data.DataLoader, 
+              device: torch.device = device): 
+    test_loss, test_acc = 0, 0 
+    model.eval() 
+    with torch.inference_mode(): 
+        for x, y in dataloader: 
+            x, y = x.to(device), y.to(device)
+            test_pred_logits = model(x) 
+
+            test_loss += loss_fn(test_pred_logits, y).item() 
+
+            # Calculate accuracy 
+            test_pred_labels = torch.argmax(torch.softmax(test_pred_logits, dim=1), dim=1) 
+            test_acc += ((test_pred_labels == y).sum().item() / len(test_pred_labels)) * 100
+        
+        test_loss /= len(dataloader) 
+        test_acc /= len(dataloader) 
+        return test_loss, test_acc
 
 
 
+# Create a train function to combine train_step() and test_step()
+def train(model: nn.Module, 
+          train_dataloader: torch.utils.data.DataLoader, 
+          test_dataloader: torch.utils.data.DataLoader, 
+          optimizer: torch.optim.Optimizer, 
+          loss_fn: nn.Module = nn.CrossEntropyLoss(), 
+          epochs: int = 5, 
+          device: torch.device = device): 
+    # Create empty results dictionary 
+     results = {
+         "train_loss": [], 
+         "train_acc": [], 
+         "test_loss": [], 
+         "test_acc": []
+     }
+
+     # Loop through training and testing steps for a number of epochs 
+     for epoch in tqdm(range(epochs)): 
+         train_loss, train_acc = train_step(
+             model=model, 
+             dataloader=train_dataloader, 
+             optimizer=optimizer, 
+             loss_fn=loss_fn,
+             device=device
+         )
+
+         test_loss, test_acc = test_step(
+             model=model, 
+             dataloader=test_dataloader, 
+             loss_fn=loss_fn,
+             device=device
+         )
+    
+        # Print out what's happening
+         print(f"Epoch: {epoch} | Train loss: {train_loss: .4f} | Train acc: {train_acc:.2f}% | Test loss: {test_loss: .4f} | Test acc: {test_acc: .2f}%") 
+
+         # Update our result dictionary 
+         results["train_loss"].append(train_loss)
+         results["train_acc"].append(train_acc) 
+         results["test_loss"].append(test_loss)
+         results["test_acc"].append(test_acc) 
+
+     #return the results dictionary at the end of the loop 
+     return results 
 
 
+# Create a timer function 
+def print_start_end_time(start: float, stop: float): 
+    total_time = stop - start 
+    print(f"\033[92m Success!!! Training completed in {total_time: .2f} seconds. \033[0m") 
+# Set random seed 
+torch.manual_seed(42)
+torch.cuda.manual_seed(42)
+
+# Set epochs 
+NUM_EPOCHS = 10
+
+# Setup loss funtion and optimizer 
+loss_fn = nn.CrossEntropyLoss() 
+optimizer = torch.optim.Adam(params=model_0.parameters(), lr=0.001) 
+
+# Start timer
+start_time = timer() 
+
+# Train model
+train(model=model_0, 
+      train_dataloader=train_dataloader_simple, 
+      test_dataloader=test_dataloader_simple, 
+      optimizer=optimizer, 
+      loss_fn=loss_fn, 
+      epochs=NUM_EPOCHS)
+stop_time = timer() 
+print_start_end_time(start=start_time, stop=stop_time)
 
     
 
