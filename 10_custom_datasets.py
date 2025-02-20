@@ -693,7 +693,7 @@ torch.manual_seed(42)
 torch.cuda.manual_seed(42)
 
 # Set epochs 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 5
 
 # Setup loss funtion and optimizer 
 loss_fn = nn.CrossEntropyLoss() 
@@ -752,16 +752,126 @@ def plot_loss_curves(results: Dict[str, List[float]]):
     plt.title("Accuracy")
     plt.xlabel("Epochs")
     plt.legend() 
-    plt.show() 
+    #plt.show() 
 
 
-plot_loss_curves(model_0_results)
+plot_loss_curves(model_0_results) 
+
+""""
+Model 1: TinyVGG with Data Augmentation
+
+Now let's try another modelling experiment this time using the same model before 
+with data augmentation.   
+"""
+
+# Create a transform with data augmentation 
+train_transform_trivial = transforms.Compose([
+    transforms.Resize(size=(64,64)),
+    transforms.TrivialAugmentWide(num_magnitude_bins=31), 
+    transforms.ToTensor()
+])
+
+test_transform_simple = transforms.Compose([
+    transforms.Resize(size=(64, 64)),
+    transforms.ToTensor()
+]) 
+
+# Create train and test datasets and dataloaders
+
+# Turn image folders into Datasets
+train_data_augment = datasets.ImageFolder(
+    root=train_dir, 
+    transform = train_transform_trivial,
+    target_transform=None,
+)
+
+test_data_simple = datasets.ImageFolder(
+    root=test_dir, 
+    transform=test_transform_simple
+)
+
+# Turn datasets into DataLoaders
+BATCH_SIZE = 32
+torch.manual_seed(42)
+train_dataloader_augment = DataLoader(
+    dataset=train_data_augment, 
+    batch_size=BATCH_SIZE,
+    shuffle=True
+)
 
 
+test_dataloader_simple = DataLoader(
+    dataset=test_data_simple, 
+    batch_size=BATCH_SIZE, 
+    shuffle=False
+)
+
+"""
+CONSTRUCT AND TRAIN MODEL 1
+This time we'll be using the same model architecture except this time we've augmented the training data.
+"""
+model_1 = TinyVGG(
+    input_shape=3, 
+    hidden_units=10,
+    output_shape= len(train_data_augment.classes)
+).to(device) 
 
 
+"""
+Now we have a model and dataloaders, let's create a loss function and an 
+optimizer and call upon our `train()` function to train and evaluate our model
+"""
+
+# Set random seed 
+torch.manual_seed(42) 
+torch.cuda.manual_seed(42)
 
 
+# Set the number of epochs 
+NUM_EPOCHS = 5 
+
+# Setup loss function and optimizer
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(params=model_1.parameters(), lr=0.001) 
+
+# Start the timer
+start_time = timer()
+
+# Train model 1 
+model_1_results = train(
+    model=model_1, 
+    train_dataloader=train_dataloader_augment, 
+    test_dataloader=test_dataloader_simple, 
+    optimizer=optimizer, 
+    loss_fn=loss_fn, 
+    epochs=NUM_EPOCHS, 
+    device=device
+)
+
+# End the timer and print out how long it took 
+stop_time = timer() 
+print_start_end_time(start=start_time, stop=stop_time)
+
+# Plot the loss curves 
+plot_loss_curves(model_1_results) 
+
+"""
+Compare models results  
+
+After evaluating our modelling experiments on their own, it's time to compare them to each other.
+
+There are a few ways to do this: 
+1. Hard-coding (what we're doing)
+2. PyTorch + TensorBoard
+3. Weights & Biases
+4. MLFlow
+"""
+
+import pandas as pd 
+model_0_df = pd.DataFrame(model_0_results)
+model_1_df = pd.DataFrame(model_1_results) 
+
+print(model_0_df)
 
 
 
