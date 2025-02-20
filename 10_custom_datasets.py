@@ -866,12 +866,54 @@ There are a few ways to do this:
 3. Weights & Biases
 4. MLFlow
 """
-
 import pandas as pd 
 model_0_df = pd.DataFrame(model_0_results)
 model_1_df = pd.DataFrame(model_1_results) 
 
-print(model_0_df)
+# Setup a plot 
+
+plt.figure(figsize=(15, 10))
+
+# Get the number of epochs 
+epochs = range(len(model_0_df))
+
+#Plot train loss 
+
+
+plt.subplot(2, 2, 1) 
+plt.plot(epochs, model_0_df["train_loss"], label="Model 0")
+plt.plot(epochs, model_1_df["train_loss"], label="Model 1") 
+plt.title("Train Loss", fontsize=10)
+plt.xlabel("Epochs")
+plt.legend()
+
+
+# Plot test loss 
+plt.subplot(2, 2, 2)
+plt.plot(epochs, model_0_df["test_loss"], label="Model 0")
+plt.plot(epochs, model_1_df["test_loss"], label="Model 1") 
+plt.title("Test Loss", fontsize=10)
+plt.xlabel("Epochs")
+plt.legend()
+
+# Plot train accuracy 
+plt.subplot(2, 2, 3)
+plt.plot(epochs, model_0_df["train_acc"], label="Model 0")
+plt.plot(epochs, model_1_df["train_acc"], label="Model 1")
+plt.title("Train Accuracy", fontsize=10)
+plt.xlabel("Epochs")
+plt.legend()
+
+
+# Plot test accuracy 
+plt.subplot(2, 2, 4)
+plt.plot(epochs, model_0_df["test_acc"], label="Model 0")
+plt.plot(epochs, model_1_df["test_acc"], label="Model 1")
+plt.title("Test Accuracy", fontsize=10)
+plt.xlabel("Epochs")
+plt.legend()
+
+plt.show()
 
 
 
