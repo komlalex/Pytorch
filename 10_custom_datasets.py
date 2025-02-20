@@ -703,7 +703,7 @@ optimizer = torch.optim.Adam(params=model_0.parameters(), lr=0.001)
 start_time = timer() 
 
 # Train model
-train(model=model_0, 
+model_0_results = train(model=model_0, 
       train_dataloader=train_dataloader_simple, 
       test_dataloader=test_dataloader_simple, 
       optimizer=optimizer, 
@@ -712,7 +712,54 @@ train(model=model_0,
 stop_time = timer() 
 print_start_end_time(start=start_time, stop=stop_time)
 
-    
+"""
+Plot the loss curves of model_0 
+A  loss curve is a way of tracking a model's progress over time.
+"""
+# Get the model_0 result keys  
+print(model_0_results.keys()) 
+
+def plot_loss_curves(results: Dict[str, List[float]]): 
+    """Plots training curves of a result dictionary"""
+
+    # Get the loss values of the results dictionary (training and test) 
+    train_loss = results["train_loss"]
+    test_loss = results["test_loss"] 
+
+    # Get the accuracy values of the results dictionary (training and test)
+    train_acc = results["train_acc"]
+    test_acc = results["test_acc"] 
+
+
+    # Figure out how many epochs there were 
+    epochs = range(len(results["train_loss"])) 
+
+    # Setup a plot 
+    plt.figure(figsize=(15, 7)) 
+
+    # Plot the loss 
+    plt.subplot(1, 2, 1) 
+    plt.plot(epochs, train_loss, label="train_loss")
+    plt.plot(epochs, test_loss, label="test_loss")
+    plt.title("Loss") 
+    plt.xlabel("Epochs")
+    plt.legend() 
+
+    # Plot the accuracy 
+    plt.subplot(1, 2, 2) 
+    plt.plot(epochs, train_acc, label="train_accuracy")
+    plt.plot(epochs, test_acc, label="test_accuracy") 
+    plt.title("Accuracy")
+    plt.xlabel("Epochs")
+    plt.legend() 
+    plt.show() 
+
+
+plot_loss_curves(model_0_results)
+
+
+
+
 
 
 
