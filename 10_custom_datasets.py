@@ -933,6 +933,67 @@ if not custom_image_path.is_file():
 else: 
     print(f"{custom_image_path} already exists, skipping download...") 
 
+"""
+Loading in a custom image with PyTorch 
+
+* In tnesor form with datatype (torch.float32)
+* Of shape 64x64x3 
+* On the right device
+""" 
+import torchvision
+
+# Read custom image and convert to float32
+custom_image = torchvision.io.read_image(str(custom_image_path)).type(torch.float32) / 255
+
+
+
+
+# Create transform pipeline to resize image 
+custom_image_transform = transforms.Compose([
+    transforms.Resize(size=(64, 64))
+])
+
+# Transform target image 
+custom_image_transformed = custom_image_transform(custom_image)
+
+'''
+plt.figure(figsize=(10, 7))
+plt.imshow(custom_image_transformed.permute(1, 2, 0))
+plt.title("Dad & Pizza") 
+plt.show()
+
+''' 
+
+# Note: We unsqueezed on the first dimension to add a batch size. This prevents error
+model_1.eval() 
+
+with torch.inference_mode(): 
+    custom_image_pred = model_1(custom_image_transformed.unsqueeze(dim=0).to(device))
+    
+    # Convert logits -> prediction probabilities 
+    custom_image_pred_probs = torch.softmax(custom_image_pred, dim=1)
+
+    # Convert prediction probabilities -> labels 
+    custom_image_pred_labels = torch.argmax(custom_image_pred_probs) 
+
+    custom_image_class = class_names[custom_image_pred_labels] 
+    print(custom_image_class)
+
+"""
+Note, to make a prediction on a custom image, we had to: 
+* Load the image and turn it into a tensor
+* Make sure the image has the same datatype as the model (float32)
+* Make sure the image has the same shape as the data the model was trained on (3, 64, 64) with a batch size (1, 3, 64, 64)
+* Make sure the image is on the same device as the model
+""" 
+ 
+
+
+
+
+
+
+#
 
 
 
