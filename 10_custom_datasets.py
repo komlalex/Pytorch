@@ -913,7 +913,26 @@ plt.title("Test Accuracy", fontsize=10)
 plt.xlabel("Epochs")
 plt.legend()
 
-plt.show()
+
+"""
+MAKING PREDICTIONS ON A CUSTOM IMAGE 
+Now that we've trained a model on a custom data... how do we make predictions on a sample/image that is
+neither in the training no testing set?
+"""
+import requests
+# setup custom image path 
+custom_image_path = data_path / "04-pizza-dad.jpeg"  
+
+# Download the image if it doesn't already exist 
+if not custom_image_path.is_file(): 
+    with open(custom_image_path, "wb") as f: 
+        # When downlaoding from GitHub, you need to use the "raw" file link
+        request = requests.get("https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/main/images/04-pizza-dad.jpeg") 
+        print(f"Downloading {custom_image_path}")
+        f.write(request.content)
+else: 
+    print(f"{custom_image_path} already exists, skipping download...") 
+
 
 
 
