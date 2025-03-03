@@ -988,12 +988,65 @@ Note, to make a prediction on a custom image, we had to:
 """ 
  
 
+"""
+PUTTING EVERYTHING TOGETHER 
+Ideal outcome: 
+A function where we pass an image path to and have our model predict on that 
+image and plot the image + prediction.
+"""
+
+def pred_and_plot_image(model: nn.Module, 
+                         image_path: Path, 
+                         class_names: List[str] = None, 
+                         transform = None,
+                         device= device):
+    """Makes a prediction on a target image with a trained model and plots the image and prediction"""
+    # Load an image, convert to float32 and divide by 255
+    custom_image = torchvision.io.read_image(str(image_path)).type(torch.float32) / 255
+
+    # Transform image if necessary
+    if transform: 
+        custom_image = transform(custom_image)
+
+    # Add batch size to image
+    custom_image = custom_image.unsqueeze(dim=0) 
+
+    # Make sure the model is on the target device
+    model.to(device) 
+
+    # Turn on eval/inference mode
+    model.eval()
+
+    with torch.inference_mode(): 
+        # Make prediction (make sure target image is on the right device)
+        custom_image_pred = model(custom_image.to(device))
+        # Convert logits -> prediction probabilities
+        custom_image_probs = torch.softmax(custom_image_pred, dim=1) 
+        # Convert prediction probabilities -> pred labels 
+        custom_image_label = torch.argmax(custom_image_probs) 
+
+        # Convert pred label -> class name if necessary
+        if class_names:
+            title = f"Pred: {class_names[custom_image_label]} | Prob: {custom_image_label}"
+        else: 
+            title = f"Prob: {custom_image_label}"
+
+        plt.figure(figsize=(10, 7))
+        plt.imshow(custom_image.squeeze().permute(1, 2, 0)) # Remove batch dimension and rearrange shape
+        plt.title(title)
+        plt.axis(False) 
+        plt.show()
+
+# Pred on our custom image
+pred_and_plot_image(model=model_1, 
+                     image_path=custom_image_path, 
+                     transform=custom_image_transform, 
+                     class_names=class_names, 
+                     device=device)
 
 
 
-
-
-#
+ 
 
 
 
